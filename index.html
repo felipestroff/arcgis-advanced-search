@@ -10,18 +10,20 @@
         <link rel="stylesheet" href="https://js.arcgis.com/4.12/esri/themes/light/main.css" />
         <link rel="stylesheet" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.css"/>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
         <link rel="stylesheet" href="./style.css"/>
     </head>
     <body>
+
         <!-- Loading -->
         <div class="loader padding-leader-3 padding-trailer-3">
             <div class="loader-bars"></div>
             <div class="loader-text">Carregando...</div>
         </div>
+
         <!-- Data Table -->
         <table id="table" class="table table-bordered table-striped table-hover"></table>
-        <!-- Error Alert -->
-        <div id="error" class="alert alert-danger" style="display: none;"></div>
+
         <!-- Search Modal -->
         <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="tituloModal" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
@@ -32,10 +34,10 @@
                         </div>
                         <div class="modal-body">
                             <div class="form-group">
-                                <select id="portal" class="form-control form-control-lg" required>
-                                    <option value="https://iede.hml.rs.gov.br/portal">https://iede.hml.rs.gov.br/portal</option>
-                                    <option value="https://iede.hml.rs.gov.br/portal">https://iede.rs.gov.br/portal</option>
-                                    <option value="https://zee.rs.gov.br/portal">https://zee.rs.gov.br/portal</option>
+                                <select id="root" class="form-control form-control-lg" required>
+                                    <option value="https://iede.hml.rs.gov.br">https://iede.hml.rs.gov.br</option>
+                                    <option value="https://iede.hml.rs.gov.br">https://iede.rs.gov.br</option>
+                                    <option value="https://zee.rs.gov.br">https://zee.rs.gov.br</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -49,15 +51,28 @@
                 </div>
             </div>
         </div>
-        <!-- Download -->
+
+        <!-- Actions -->
         <div id="actions">
-            <button id="refresh" class="btn btn-primary btn-sm actions-btn" title="Atualizar" onclick="location.reload();">
+            <button id="refresh" class="btn btn-primary btn-sm actions-btn" title="Recarregar" onclick="location.reload();">
                 <i class="fas fa-sync"></i>
             </button>
-            <button id="download" class="btn btn-success btn-sm actions-btn" title="Baixar dados">
+            <button id="download" class="btn btn-success btn-sm actions-btn" title="Baixar lista">
                 <i class="fas fa-download"></i>
             </button>
         </div>
+
+        <div class="container">
+            <div class="col">
+                <div class="row justify-content-center">
+                    <!-- Refresh error button-->
+                    <button id="refreshErrorBtn" class="btn btn-primary btn-lg" onclick="location.reload();">
+                        Recarregar
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Scripts -->
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" 
@@ -71,6 +86,7 @@
         <script src="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
         <script src="https://kit.fontawesome.com/2b2b74cc8f.js"></script>
         <script src="https://js.arcgis.com/4.12/"></script>
         <script src="./app.js"></script>

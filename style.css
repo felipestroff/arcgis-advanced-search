@@ -108,3 +108,8 @@ html {
 .actions-btn:hover {
     opacity: 1;
 }
+
+#refreshErrorBtn {
+    margin-top: 45%;
+    display: none;
+}

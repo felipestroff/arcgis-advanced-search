@@ -1,18 +1,22 @@
 $(document).ready(function() {
+
     // Init Bootstrap modal, with static status
     $('#modal').modal({
         backdrop: 'static', 
         keyboard: false
     });
+
+    $('body').tooltip({selector: '[title]'});
 });
 
 function search(e) {
 
-    // Prevent page to load
+    // Prevent page to reload on submit
     e.preventDefault();
 
     // Get params
-    var portal = document.getElementById('portal').value;
+    var root = document.getElementById('root').value;
+    var portal = root + '/portal';
     var groupID = document.getElementById('groupID').value;
 
     // Hide modal and loading
@@ -35,17 +39,26 @@ function search(e) {
         // Request a Portal URL with group ID param
         esriRequest(portal + '/sharing/rest/content/groups/' + groupID, options).then(function (response) {
 
+            // Total of items
+            var total = response.data.total;
+
             // Create table columns and data
             var columns = [
                 {
                     title: 'ID'
                 },
                 {
+                    title: 'URL'
+                },
+                {
                     title: '',
                 },
                 {
                     title: 'Nome'
-                }
+                },
+                {
+                    title: 'Tipo'
+                },
             ];
         
             var data = [];
@@ -57,11 +70,13 @@ function search(e) {
                 // Create a row and push values into data
                 var rows = [];
                 var downloadRows = [];
-                var thumbnail = '<img src="' + service.url + '/info/thumbnail" class="img-thumbnail" style="width: 200px; height: 133px;">';
+                var thumbnail = thumbnail = '<img src="' + service.url + '/info/thumbnail" class="img-thumbnail" style="width: 200px; height: 133px;">';
 
                 rows.push(service.id);
+                rows.push(service.url);
                 rows.push(thumbnail);
                 rows.push(service.title);
+                rows.push(service.type);
                 data.push(rows);
 
                 downloadRows.push(service.title);
@@ -87,11 +102,11 @@ function search(e) {
                 'order': [],
                 'columnDefs': [
                     {
-                        'targets': [0],
+                        'targets': [0, 1],
                         'visible': false
                     },
                     {
-                        'targets': [0, 1],
+                        'targets': [0, 1, 2],
                         'searchable': false,
                         'orderable': false
                     }
@@ -124,6 +139,23 @@ function search(e) {
                             window.open(portal + '/home/webmap/viewer.html?useExisting=1&layers=' + id, '_blank');
         
                             break;
+                        case 'rest':
+
+                            var rowData = table.row(target).data();
+                            var url = rowData[1];
+
+                            window.open(url, '_blank');
+                
+                            break;
+                        case 'geojson':
+
+                            var rowData = table.row(target).data();
+                            var url = rowData[1];
+                            var title = rowData[3];
+
+                            downloadGeojson(url, title);
+
+                            break;
                     }
                 },
                 items: {
@@ -137,7 +169,43 @@ function search(e) {
                             },
                             'mapViewer': {
                                 name: 'ArcGIS Map Viewer',
-                                icon: 'fas fa-map-marked-alt'
+                                icon: 'fas fa-map-marked-alt',
+                                disabled: function() { 
+
+                                    var target = this;
+
+                                    var rowData = table.row(target).data();
+                                    var type = rowData[4];
+
+                                    if (type === 'AppBuilder Extension') {
+                                        return true;
+                                    }
+                                }
+                            },
+                            'rest': {
+                                name: 'ArcGIS REST',
+                                icon: 'fas fa-external-link-alt'
+                            }
+                        }
+                    },
+                    'download': {
+                        name: 'Baixar',
+                        icon: 'fas fa-cloud-download-alt',
+                        items: {
+                            'geojson': {
+                                name: 'GeoJSON',
+                                icon: 'fas fa-globe'
+                            }
+                        },
+                        disabled: function() { 
+
+                            var target = this;
+
+                            var rowData = table.row(target).data();
+                            var type = rowData[4];
+
+                            if (type === 'AppBuilder Extension' || type === 'Image Service') {
+                                return true;
                             }
                         }
                     }
@@ -164,6 +232,12 @@ function search(e) {
             $('#refresh').show();
             $('#download').show();
 
+            // Show success alert
+            toastr.success(total + ' itens encontrados', 'Sucesso!', {
+                timeOut: 0, 
+                extendedTimeOut: 0
+            });
+
         // if errors
         }).catch((e) => {
             
@@ -171,11 +245,43 @@ function search(e) {
 
             // Hide loading and append a error in alert
             $('.loader').hide();
-            $('#error').html(e.name + '<br><strong>' + e.message + '</strong>');
-            $('#error').show();
+
+            // Show error alert
+            toastr.error(e.message, e.name, {
+                timeOut: 0, 
+                extendedTimeOut: 0
+            });
 
             // Show actions
-            $('#refresh').show();
+            $('#refreshErrorBtn').show();
+        });
+    });
+}
+
+function downloadGeojson(url, title) {
+
+    toastr.info('Processando download...', 'Aguarde', {
+        timeOut: 0, 
+        extendedTimeOut: 0
+    })
+
+    require(['esri/request'], function(esriRequest) {
+
+        esriRequest(url + '/0/query?where=1=1&f=geojson').then(function(response) {
+
+            toastr.clear();
+
+            var name = title.replace(/ /g, '_');
+            var data = JSON.stringify(response.data);
+            var link = document.createElement('a');
+            var file = new Blob([data], { type: 'application/json' });
+            var dataUrl = URL.createObjectURL(file);
+
+            link.href = dataUrl;
+            link.download =  name + '.geojson';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         });
     });
 }

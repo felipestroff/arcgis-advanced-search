@@ -108,3 +108,10 @@ html {
 .actions-btn:hover {
     opacity: 1;
 }
+
+#viewDiv {
+    padding: 0;
+    margin: 0;
+    height: 650px;
+    width: 100%;
+}

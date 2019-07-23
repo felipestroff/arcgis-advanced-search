@@ -6,7 +6,7 @@ $(document).ready(function() {
         keyboard: false
     });
 
-    $('body').tooltip({selector: '[title]'});
+    $('body').tooltip({selector: '[data-toggle="tooltip"]'});
 });
 
 function search(e) {
@@ -27,7 +27,9 @@ function search(e) {
 
     if (root !== '') {
 
-        require(['esri/request'], function (esriRequest) {
+        require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
+
+            esriConfig.portalUrl = portal;
 
             // Hide modal and show loading
             $('#modal').modal('hide');
@@ -46,7 +48,7 @@ function search(e) {
             // * ArcGIS API for REST
             // Request a Portal URL with group ID param
             esriRequest(portal + '/sharing/rest/content/groups/' + groupID, options).then(function (response) {
-                
+
                 // Total of items
                 var total = response.data.total;
 
@@ -78,7 +80,7 @@ function search(e) {
                     // Create a row and push values into data
                     var rows = [];
                     var downloadRows = [];
-                    var thumbnail = thumbnail = '<img src="' + service.url + '/info/thumbnail" class="img-thumbnail" style="width: 200px; height: 133px;">';
+                    var thumbnail = '<img src="' + service.url + '/info/thumbnail" class="img-thumbnail" style="width: 200px; height: 133px;">';
 
                     rows.push(service.id);
                     rows.push(service.url);
@@ -131,6 +133,16 @@ function search(e) {
                         var target = this;
 
                         switch (key) {
+                            case 'view':
+
+                                var rowData = table.row(target).data();
+                                var id = rowData[0];
+                                var title = rowData[3];
+
+                                preview(id, title);
+
+                                break;
+
                             case 'portal':
 
                                 var rowData = table.row(target).data();
@@ -139,6 +151,7 @@ function search(e) {
                                 window.open(portal + '/home/item.html?id=' + id, '_blank');
 
                                 break;
+
                             case 'mapViewer':
 
                                 var rowData = table.row(target).data();
@@ -147,6 +160,7 @@ function search(e) {
                                 window.open(portal + '/home/webmap/viewer.html?useExisting=1&layers=' + id, '_blank');
             
                                 break;
+
                             case 'rest':
 
                                 var rowData = table.row(target).data();
@@ -155,6 +169,16 @@ function search(e) {
                                 window.open(url, '_blank');
                     
                                 break;
+
+                            case 'metadata':
+
+                                var rowData = table.row(target).data();
+                                var id = rowData[0];
+
+                                window.open(portal + '/sharing/rest/content/items/' + id + '/info/metadata/metadata.xml?format=default&output=html', '_blank');
+
+                                break;
+
                             case 'geojson':
 
                                 var rowData = table.row(target).data();
@@ -167,6 +191,10 @@ function search(e) {
                         }
                     },
                     items: {
+                        'view': {
+                            name: 'Visualizar',
+                            icon: 'fas fa-map-marker-alt'
+                        },
                         'open': {
                             name: 'Abrir no',
                             icon: 'fas fa-link',
@@ -196,6 +224,10 @@ function search(e) {
                                 }
                             }
                         },
+                        'metadata': {
+                            name: 'Metadados',
+                            icon: 'far fa-file-alt'
+                        },
                         'download': {
                             name: 'Baixar',
                             icon: 'fas fa-cloud-download-alt',
@@ -212,7 +244,9 @@ function search(e) {
                                 var rowData = table.row(target).data();
                                 var type = rowData[4];
 
-                                if (type === 'AppBuilder Extension' || type === 'Image Service') {
+                                if (type === 'AppBuilder Extension' ||
+                                    type === 'Image Service' ||
+                                    type === 'WMS') {
                                     return true;
                                 }
                             }
@@ -241,15 +275,12 @@ function search(e) {
                 $('#download').show();
 
                 // Show success alert
-                toastr.success('', total + ' itens encontrados', {
-                    timeOut: 0, 
-                    extendedTimeOut: 0
-                });
+                toastr.success('', total + ' itens encontrados');
 
             // if errors
             }).catch((e) => {
                 
-                setTimeout(function(){ 
+                setTimeout(function() { 
 
                     console.error(e);
 
@@ -272,6 +303,7 @@ function verify(el) {
     var target = document.getElementById('rootInput');
     
     if (el.value !== '') {
+
         target.setAttribute('disabled', true);
         target.value = '';
     }
@@ -289,7 +321,7 @@ function downloadGeojson(url, title) {
 
     require(['esri/request'], function(esriRequest) {
 
-        esriRequest(url + '/0/query?where=1=1&f=geojson').then(function(response) {
+        esriRequest(url + '/0/query?where=1=1&f=geojson', { responseType: 'json' }).then(function(response) {
 
             toastr.clear();
 
@@ -304,6 +336,149 @@ function downloadGeojson(url, title) {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+
+        }).catch((e) => {
+
+            console.error(e);
+    
+            toastr.clear();
+            toastr.error(e.message, e.name);
         });
+    });
+}
+
+function preview(id, title) {
+
+    require([
+        'esri/Map', 
+        'esri/views/MapView',  
+        'esri/layers/Layer'
+    ], 
+    function(
+        Map, 
+        MapView, 
+        Layer
+    ) {
+
+        var map = new Map({
+            basemap: 'streets'
+        });
+
+        var view = new MapView({
+            container: 'viewDiv',
+            map: map,
+            center: [-52, -30],
+            zoom: 7,
+        });
+
+        Layer.fromPortalItem({
+            portalItem: {
+                id: id
+            }
+        })
+        .then(addLayer)
+        .catch(rejection);
+
+        view.on('layerview-create', function (event) {
+
+            var layer = event.layer;
+    
+            console.info('[LAYER]: ' + layer.title + ' (' + layer.type + ') loaded');
+        });
+
+        view.on('pointer-move', function(event) {
+            setLayerTooltip(view, event);
+        });
+  
+        function addLayer(layer) {
+
+            $('#previewModal .modal-title').html(title);
+            $('#previewModal').modal();
+            $('#previewModal').modal('handleUpdate');
+
+            map.add(layer);
+
+            setLayerPopup(layer);
+        }
+
+        function rejection(e) {
+
+            console.error(e);
+
+            toastr.clear();
+            toastr.error(e.message, e.name);
+        }
+    });
+}
+
+function setLayerPopup(layer) {
+
+    layer.on('layerview-create', function() {  
+
+        var fields = layer.source.layerDefinition.fields;
+        var layerFields = [];
+
+        fields.forEach(function(field) {
+
+            layerFields.push({
+                fieldName: field.name,
+                label: field.alias,
+                visible: true
+            });
+        });
+
+        var template = {
+            title: layer.title,
+            content: [{
+                type: 'fields',
+                fieldInfos: layerFields
+            }]
+        };
+        
+        layer.popupTemplate = template;
+    });
+}
+
+function setLayerTooltip(view, event) {
+
+    view.hitTest(event).then(function(response) {
+                    
+        var feature;
+
+        if (response.results.length > 0) {
+            
+            feature = response.results[0].graphic;
+
+            if (!view.popup.selectedFeature || view.popup.selectedFeature !== feature) {
+                
+                if (feature && feature.layer !== null) {
+
+                    var displayField = feature.layer.displayField;
+                    var attributes = feature.attributes;
+                    var title;
+            
+                    for (var attr in attributes) {
+            
+                        if (attr === displayField) {
+                            title = attributes[attr];
+                        }
+                    }
+            
+                    if (title) {
+                        view.container.setAttribute('title', title);
+                    }
+                } 
+                else {
+                    view.container.removeAttribute('title');
+                }
+            }
+
+        }
+        else {
+            view.container.removeAttribute('title');
+        }
+
+    }).otherwise(function(e) {
+        console.error('[Hit failed]: ', e);
     });
 }

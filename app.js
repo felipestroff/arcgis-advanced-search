@@ -359,15 +359,6 @@ function createContextMenu(table, portal) {
     });
 }
 
-// Create map
-// Create view
-// Get layer from ArcGIS Portal
-// Add layer to map
-// Query layer extent
-// Add legend to layer
-// Add popup to layer
-// Go to layer extent
-// Show modal with result
 function preview(id, title) {
 
     require([
@@ -404,10 +395,7 @@ function preview(id, title) {
                 id: id
             }
         })
-        .then(addLayer)
-        .catch(rejection);
-  
-        function addLayer(layer) {
+        .then(function(layer) {
 
             $('.loader').show();
     
@@ -431,17 +419,14 @@ function preview(id, title) {
                     $('#previewModal').modal('handleUpdate');
                 });
             });
-        }
-
-        function rejection(e) {
-
-            $('.loader').hide();
+        })
+        .catch(function(e) {
 
             console.error(e);
 
             toastr.clear();
             toastr.error(e.message, e.name);
-        }
+        });
     });
 }
 

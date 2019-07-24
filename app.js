@@ -80,7 +80,7 @@ function search(e) {
                     // Create a row and push values into data
                     var rows = [];
                     var downloadRows = [];
-                    var thumbnail = '<img src="' + service.url + '/info/thumbnail" class="img-thumbnail" style="width: 200px; height: 133px;">';
+                    var thumbnail = '<img src="' + service.url + '/info/thumbnail" class="img-thumbnail img-item" crossorigin="anonymous">';
 
                     rows.push(service.id);
                     rows.push(service.url);
@@ -94,165 +94,10 @@ function search(e) {
                 });
 
                 // Init DataTables plugin with columns and data/rows
-                var table = $('#table').DataTable({
-                    'lengthMenu': [[10, 50, 100, -1], [10, 50, 100, 'Tudo']],
-                    'language': {
-                        'lengthMenu': 'Mostrar _MENU_ registros/página',
-                        'zeroRecords': 'Nada encontrado',
-                        'info': 'Página _PAGE_ de _PAGES_',
-                        'infoEmpty': 'Nenhum registro encontrado',
-                        'infoFiltered': '(filtrado de _MAX_ registros)',
-                        'search': '',
-                        'paginate': {
-                            'next': '→',
-                            'previous': '←'
-                        },
-                        'searchPlaceholder': 'Pesquisar...',
-                    },
-                    'order': [],
-                    'columnDefs': [
-                        {
-                            'targets': [0, 1],
-                            'visible': false
-                        },
-                        {
-                            'targets': [0, 1, 2],
-                            'searchable': false,
-                            'orderable': false
-                        }
-                    ],
-                    'columns': columns,
-                    'data': data
-                });
+                var table = createDataTable(columns, data);
 
                 // Init jQuery contextMenu
-                $.contextMenu({
-                    selector: '#table tbody tr',
-                    callback: function(key, options) {
-
-                        var target = this;
-
-                        switch (key) {
-                            case 'view':
-
-                                var rowData = table.row(target).data();
-                                var id = rowData[0];
-                                var title = rowData[3];
-
-                                preview(id, title);
-
-                                break;
-
-                            case 'portal':
-
-                                var rowData = table.row(target).data();
-                                var id = rowData[0];
-
-                                window.open(portal + '/home/item.html?id=' + id, '_blank');
-
-                                break;
-
-                            case 'mapViewer':
-
-                                var rowData = table.row(target).data();
-                                var id = rowData[0];
-
-                                window.open(portal + '/home/webmap/viewer.html?useExisting=1&layers=' + id, '_blank');
-            
-                                break;
-
-                            case 'rest':
-
-                                var rowData = table.row(target).data();
-                                var url = rowData[1];
-
-                                window.open(url, '_blank');
-                    
-                                break;
-
-                            case 'metadata':
-
-                                var rowData = table.row(target).data();
-                                var id = rowData[0];
-
-                                window.open(portal + '/sharing/rest/content/items/' + id + '/info/metadata/metadata.xml?format=default&output=html', '_blank');
-
-                                break;
-
-                            case 'geojson':
-
-                                var rowData = table.row(target).data();
-                                var url = rowData[1];
-                                var title = rowData[3];
-
-                                downloadGeojson(url, title);
-
-                                break;
-                        }
-                    },
-                    items: {
-                        'view': {
-                            name: 'Visualizar',
-                            icon: 'fas fa-map-marker-alt'
-                        },
-                        'open': {
-                            name: 'Abrir no',
-                            icon: 'fas fa-link',
-                            items: {
-                                'portal': {
-                                    name: 'ArcGIS Portal', 
-                                    icon: 'fas fa-globe-americas'
-                                },
-                                'mapViewer': {
-                                    name: 'ArcGIS Map Viewer',
-                                    icon: 'fas fa-map-marked-alt',
-                                    disabled: function() { 
-
-                                        var target = this;
-
-                                        var rowData = table.row(target).data();
-                                        var type = rowData[4];
-
-                                        if (type === 'AppBuilder Extension') {
-                                            return true;
-                                        }
-                                    }
-                                },
-                                'rest': {
-                                    name: 'ArcGIS REST',
-                                    icon: 'fas fa-external-link-alt'
-                                }
-                            }
-                        },
-                        'metadata': {
-                            name: 'Metadados',
-                            icon: 'far fa-file-alt'
-                        },
-                        'download': {
-                            name: 'Baixar',
-                            icon: 'fas fa-cloud-download-alt',
-                            items: {
-                                'geojson': {
-                                    name: 'GeoJSON',
-                                    icon: 'fas fa-globe'
-                                }
-                            },
-                            disabled: function() { 
-
-                                var target = this;
-
-                                var rowData = table.row(target).data();
-                                var type = rowData[4];
-
-                                if (type === 'AppBuilder Extension' ||
-                                    type === 'Image Service' ||
-                                    type === 'WMS') {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                });
+                createContextMenu(table);
 
                 $('#download').on('click', function () {
 
@@ -347,6 +192,173 @@ function downloadGeojson(url, title) {
     });
 }
 
+function createDataTable(columns, data) {
+
+    var table = $('#table').DataTable({
+        'lengthMenu': [[10, 50, 100, -1], [10, 50, 100, 'Tudo']],
+        'language': {
+            'lengthMenu': 'Mostrar _MENU_ registros/página',
+            'zeroRecords': 'Nada encontrado',
+            'info': 'Página _PAGE_ de _PAGES_',
+            'infoEmpty': 'Nenhum registro encontrado',
+            'infoFiltered': '(filtrado de _MAX_ registros)',
+            'search': '',
+            'paginate': {
+                'next': '→',
+                'previous': '←'
+            },
+            'searchPlaceholder': 'Pesquisar...',
+        },
+        'order': [],
+        'columnDefs': [
+            {
+                'targets': [0, 1],
+                'visible': false
+            },
+            {
+                'targets': [0, 1, 2],
+                'searchable': false,
+                'orderable': false
+            }
+        ],
+        'columns': columns,
+        'data': data
+    });
+
+    return table;
+}
+
+function createContextMenu(table) {
+
+    $.contextMenu({
+        selector: '#table tbody tr',
+        callback: function(key) {
+
+            var target = this;
+
+            switch (key) {
+                case 'view':
+
+                    var rowData = table.row(target).data();
+                    var id = rowData[0];
+                    var title = rowData[3];
+
+                    preview(id, title);
+
+                    break;
+
+                case 'portal':
+
+                    var rowData = table.row(target).data();
+                    var id = rowData[0];
+
+                    window.open(portal + '/home/item.html?id=' + id, '_blank');
+
+                    break;
+
+                case 'mapViewer':
+
+                    var rowData = table.row(target).data();
+                    var id = rowData[0];
+
+                    window.open(portal + '/home/webmap/viewer.html?useExisting=1&layers=' + id, '_blank');
+
+                    break;
+
+                case 'rest':
+
+                    var rowData = table.row(target).data();
+                    var url = rowData[1];
+
+                    window.open(url, '_blank');
+        
+                    break;
+
+                case 'metadata':
+
+                    var rowData = table.row(target).data();
+                    var id = rowData[0];
+
+                    window.open(portal + '/sharing/rest/content/items/' + id + '/info/metadata/metadata.xml?format=default&output=html', '_blank');
+
+                    break;
+
+                case 'geojson':
+
+                    var rowData = table.row(target).data();
+                    var url = rowData[1];
+                    var title = rowData[3];
+
+                    downloadGeojson(url, title);
+
+                    break;
+            }
+        },
+        items: {
+            'view': {
+                name: 'Visualizar',
+                icon: 'fas fa-map-marker-alt'
+            },
+            'open': {
+                name: 'Abrir no',
+                icon: 'fas fa-link',
+                items: {
+                    'portal': {
+                        name: 'ArcGIS Portal', 
+                        icon: 'fas fa-globe-americas'
+                    },
+                    'mapViewer': {
+                        name: 'ArcGIS Map Viewer',
+                        icon: 'fas fa-map-marked-alt',
+                        disabled: function() { 
+
+                            var target = this;
+
+                            var rowData = table.row(target).data();
+                            var type = rowData[4];
+
+                            if (type === 'AppBuilder Extension') {
+                                return true;
+                            }
+                        }
+                    },
+                    'rest': {
+                        name: 'ArcGIS REST',
+                        icon: 'fas fa-external-link-alt'
+                    }
+                }
+            },
+            'metadata': {
+                name: 'Metadados',
+                icon: 'far fa-file-alt'
+            },
+            'download': {
+                name: 'Baixar',
+                icon: 'fas fa-cloud-download-alt',
+                items: {
+                    'geojson': {
+                        name: 'GeoJSON',
+                        icon: 'fas fa-globe'
+                    }
+                },
+                disabled: function() { 
+
+                    var target = this;
+
+                    var rowData = table.row(target).data();
+                    var type = rowData[4];
+
+                    if (type === 'AppBuilder Extension' ||
+                        type === 'Image Service' ||
+                        type === 'WMS') {
+                        return true;
+                    }
+                }
+            }
+        }
+    });
+}
+
 function preview(id, title) {
 
     require([
@@ -368,7 +380,7 @@ function preview(id, title) {
             container: 'viewDiv',
             map: map,
             center: [-52, -30],
-            zoom: 7,
+            zoom: 6,
         });
 
         Layer.fromPortalItem({

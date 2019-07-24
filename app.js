@@ -97,7 +97,7 @@ function search(e) {
                 var table = createDataTable(columns, data);
 
                 // Init jQuery contextMenu
-                createContextMenu(table);
+                createContextMenu(table, portal);
 
                 $('#download').on('click', function () {
 
@@ -228,7 +228,7 @@ function createDataTable(columns, data) {
     return table;
 }
 
-function createContextMenu(table) {
+function createContextMenu(table, portal) {
 
     $.contextMenu({
         selector: '#table tbody tr',
@@ -359,6 +359,15 @@ function createContextMenu(table) {
     });
 }
 
+// Create map
+// Create view
+// Get layer from ArcGIS Portal
+// Add layer to map
+// Query layer extent
+// Add legend to layer
+// Add popup to layer
+// Go to layer extent
+// Show modal with result
 function preview(id, title) {
 
     require([
@@ -383,14 +392,6 @@ function preview(id, title) {
             zoom: 6,
         });
 
-        Layer.fromPortalItem({
-            portalItem: {
-                id: id
-            }
-        })
-        .then(addLayer)
-        .catch(rejection);
-
         view.on('layerview-create', function (event) {
 
             var layer = event.layer;
@@ -398,22 +399,43 @@ function preview(id, title) {
             console.info('[LAYER]: ' + layer.title + ' (' + layer.type + ') loaded');
         });
 
-        view.on('pointer-move', function(event) {
-            setLayerTooltip(view, event);
-        });
+        Layer.fromPortalItem({
+            portalItem: {
+                id: id
+            }
+        })
+        .then(addLayer)
+        .catch(rejection);
   
         function addLayer(layer) {
 
-            $('#previewModal .modal-title').html(title);
-            $('#previewModal').modal();
-            $('#previewModal').modal('handleUpdate');
-
+            $('.loader').show();
+    
             map.add(layer);
 
-            setLayerPopup(layer);
+            layer.when(function() {
+    
+                layer.queryExtent().then(function(response) {
+
+                    console.log(response);
+
+                    createLayerLegend(view, layer);
+                    createLayerPopup(layer);
+
+                    view.goTo(response.extent);
+
+                    $('.loader').hide();
+
+                    $('#previewModal .modal-title').html(title);
+                    $('#previewModal').modal();
+                    $('#previewModal').modal('handleUpdate');
+                });
+            });
         }
 
         function rejection(e) {
+
+            $('.loader').hide();
 
             console.error(e);
 
@@ -423,7 +445,24 @@ function preview(id, title) {
     });
 }
 
-function setLayerPopup(layer) {
+function createLayerLegend(view, layer) {
+
+    require(['esri/widgets/Legend'], function(Legend) {
+
+        var legend = new Legend({
+            view: view,
+            layerInfos: [
+                {
+                    layer: layer
+                }
+            ]
+        });
+
+        view.ui.add(legend, 'bottom-right');
+    });
+}
+
+function createLayerPopup(layer) {
 
     layer.on('layerview-create', function() {  
 
@@ -448,49 +487,5 @@ function setLayerPopup(layer) {
         };
         
         layer.popupTemplate = template;
-    });
-}
-
-function setLayerTooltip(view, event) {
-
-    view.hitTest(event).then(function(response) {
-                    
-        var feature;
-
-        if (response.results.length > 0) {
-            
-            feature = response.results[0].graphic;
-
-            if (!view.popup.selectedFeature || view.popup.selectedFeature !== feature) {
-                
-                if (feature && feature.layer !== null) {
-
-                    var displayField = feature.layer.displayField;
-                    var attributes = feature.attributes;
-                    var title;
-            
-                    for (var attr in attributes) {
-            
-                        if (attr === displayField) {
-                            title = attributes[attr];
-                        }
-                    }
-            
-                    if (title) {
-                        view.container.setAttribute('title', title);
-                    }
-                } 
-                else {
-                    view.container.removeAttribute('title');
-                }
-            }
-
-        }
-        else {
-            view.container.removeAttribute('title');
-        }
-
-    }).otherwise(function(e) {
-        console.error('[Hit failed]: ', e);
     });
 }

@@ -2,10 +2,44 @@ html {
     padding: 10px;
 }
 
-/* Esri Loading */
+#actions {
+    position: fixed;
+    top: 40%;
+    z-index: 1;
+    display: grid;
+}
+
+.actions-btn {
+    cursor: pointer;
+    opacity: 0.5;
+    display: none;
+    margin-top: 5px;
+}
+
+.actions-btn:hover {
+    opacity: 1;
+}
+
+#table {
+    width: 100% !important;
+}
+
+.img-item {
+    max-width: 150px; 
+    height: auto;
+}
+
+#viewDiv {
+    padding: 0;
+    margin: 0;
+    height: 650px;
+    width: 100%;
+}
+
+/* Esri Style */
 .loader {
     display: none;
-    position: absolute;
+    position: fixed;
     top: 40%;
     left: 50%;
     z-index: 100;
@@ -84,38 +118,4 @@ html {
 .loader-text {
     text-align: center;
     padding-top: 4rem;
-}
-
-#actions {
-    position: fixed;
-    top: 40%;
-    z-index: 1;
-    display: grid;
-}
-
-.actions-btn {
-    cursor: pointer;
-    opacity: 0.5;
-    display: none;
-    margin-top: 5px;
-}
-
-.actions-btn:hover {
-    opacity: 1;
-}
-
-#viewDiv {
-    padding: 0;
-    margin: 0;
-    height: 650px;
-    width: 100%;
-}
-
-.img-item {
-    max-width: 150px; 
-    height: auto;
-}
-
-#table {
-    width: 100% !important;
 }

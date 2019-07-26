@@ -40,7 +40,7 @@ html {
 .loader {
     display: none;
     position: fixed;
-    top: 40%;
+    top: calc(50% - 100px);
     left: 50%;
     z-index: 100;
 }

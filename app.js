@@ -1,3 +1,11 @@
+var app = {
+    url: null,
+    map: null,
+    view: null,
+    legend: null,
+    token: null
+}
+
 $(document).ready(function() {
 
     // Init Bootstrap modal, with static status
@@ -5,8 +13,43 @@ $(document).ready(function() {
         backdrop: 'static', 
         keyboard: false
     });
+    $('#previewModal').modal('handleUpdate');
 
     $('body').tooltip({selector: '[data-toggle="tooltip"]'});
+});
+
+require(['esri/Map', 'esri/views/MapView', 'esri/widgets/Home'], function(Map, MapView, Home) {
+
+    app.map = new Map({
+        basemap: 'streets'
+    });
+
+    app.view = new MapView({
+        container: 'viewDiv',
+        map: app.map,
+        center: [-52, -30],
+        zoom: 6
+    });
+
+    app.view.on('layerview-create', function (event) {
+
+        var layer = event.layer;
+
+        console.info('[LAYER]: ' + layer.title + ' (' + layer.type + ') loaded');
+    });
+
+    app.view.on('layerview-destroy', function (event) {
+
+        var layer = event.layer;
+
+        console.info('[LAYER]: ' + layer.title + ' (' + layer.type + ') removed');
+    });
+
+    var homeBtn = new Home({
+        view: app.view
+    });
+
+    app.view.ui.add(homeBtn, 'top-left');
 });
 
 function search(e) {
@@ -15,20 +58,21 @@ function search(e) {
     e.preventDefault();
 
     // Get params
-    var root = document.getElementById('root').value;
-    var rootInput = document.getElementById('rootInput').value;
-    var portal = root + '/portal';
+    var url = document.getElementById('urlSelect').value;
+    var urlInput = document.getElementById('urlInput').value;
+    var portal = url + '/portal';
     var groupID = document.getElementById('groupID').value;
 
-    if (root === '') {
-        root = rootInput;
-        portal = rootInput + '/portal';
+    if (url === '') {
+        url = urlInput;
+        portal = urlInput + '/portal';
     }
 
-    if (root !== '') {
+    if (url !== '') {
 
         require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
 
+            app.url = url;
             esriConfig.portalUrl = portal;
 
             // Hide modal and show loading
@@ -41,6 +85,9 @@ function search(e) {
             body.append('f', 'json');
 
             var options = {
+                query: {
+                    f: 'json'
+                },
                 responseType: 'json',
                 body: body
             }
@@ -48,6 +95,8 @@ function search(e) {
             // * ArcGIS API for REST
             // Request a Portal URL with group ID param
             esriRequest(portal + '/sharing/rest/content/groups/' + groupID, options).then(function (response) {
+
+                generateToken(portal);
 
                 // Total of items
                 var total = response.data.total;
@@ -127,25 +176,20 @@ function search(e) {
                 
                 setTimeout(function() { 
 
-                    console.error(e);
+                    logError(e);
 
-                    // Show modal
                     $('#modal').modal('show');
-
-                    // Hide loading and append a error in alert
                     $('.loader').hide();
 
-                    // Show error alert
-                    toastr.error(e.message, e.name);
                 }, 500);
             });
         });
     }
 }
 
-function verify(el) {
+function verifyInput(el) {
 
-    var target = document.getElementById('rootInput');
+    var target = document.getElementById('urlInput');
     
     if (el.value !== '') {
 
@@ -157,16 +201,132 @@ function verify(el) {
     }
 }
 
-function downloadGeojson(url, title) {
-
-    toastr.info('Processando download...', 'Aguarde', {
-        timeOut: 0, 
-        extendedTimeOut: 0
-    })
+function generateToken(portal) {
 
     require(['esri/request'], function(esriRequest) {
 
-        esriRequest(url + '/0/query?where=1=1&f=geojson', { responseType: 'json' }).then(function(response) {
+        var data = new FormData();
+        var username = document.getElementById('dijit_form_ValidationTextBox_0').value;
+        var password = document.getElementById('dijit_form_ValidationTextBox_1').value;
+
+        data.append('username', username);
+        data.append('password', password);
+        data.append('client', 'requestip');
+        data.append('f', 'pjson');
+
+        var options = {
+            responseType: 'json',
+            body: data
+        };
+
+        esriRequest(portal + '/sharing/rest/generateToken', options).then(function(response) {
+
+            app.token = response.data.token;
+
+            console.info('[TOKEN]:', app.token);
+        })
+        .catch((e) => {
+            logError(e);
+        });
+    });
+}
+
+function extractData(layerUrl, format) {
+
+    require(['esri/tasks/Geoprocessor', 'esri/request'], function(Geoprocessor, esriRequest) {
+
+        var data = new FormData();
+        var inputLayers = [
+            {
+                url: layerUrl + '/0'
+            }
+        ];
+        var options = {
+            responseType: 'json'
+        };
+        var url = app.url + '/server/rest/services/System/SpatialAnalysisTools/GPServer/ExtractData';
+
+        data.append('inputLayers', JSON.stringify(inputLayers));
+        data.append('dataFormat', format);
+        data.append('f', 'pjson');
+
+        console.log(JSON.stringify(inputLayers));
+        console.log(format);
+
+        var geoprocessor = new Geoprocessor({
+            url: url,
+            requestOptions: {
+                responseType: 'json',
+                body: data
+            }
+        });
+
+        toastr.clear();
+        toastr.info('Processando download...', 'Aguarde', {
+            timeOut: 0, 
+            extendedTimeOut: 0
+        });
+
+        geoprocessor.submitJob().then(function(result) {
+
+            console.log(result);
+
+            if (result.jobStatus === 'job-success') {
+                    
+                esriRequest(url + '/jobs/' + result.jobId + '/results/contentID?f=json', options).then(function(response) {
+
+                    console.log(response);
+                });
+            }
+            else {
+
+                toastr.clear();
+
+                result.messages.forEach(function(msg) {
+
+                    if (msg.type === 'informative') {
+
+                        toastr.info('', msg.description, {
+                            timeOut: 0, 
+                            extendedTimeOut: 0,
+                            newestOnTop: false
+                        });
+                    }
+                    else if (msg.type === 'error') {
+
+                        toastr.error('', msg.description, {
+                            timeOut: 0, 
+                            extendedTimeOut: 0,
+                            newestOnTop: false
+                        });
+                    }
+                });
+            }
+        }).catch((e) => {
+            logError(e);
+        });
+    });
+}
+
+function downloadGeojson(url, title) {
+
+    toastr.clear();
+    toastr.info('Processando download...', 'Aguarde', {
+        timeOut: 0, 
+        extendedTimeOut: 0
+    });
+
+    require(['esri/request'], function(esriRequest) {
+
+        var options = {
+            query: {
+                where: '1=1',
+                f: 'geojson'
+            },
+            responseType: 'json'
+        }
+
+        esriRequest(url + '/0/query', options).then(function(response) {
 
             toastr.clear();
 
@@ -183,11 +343,7 @@ function downloadGeojson(url, title) {
             document.body.removeChild(link);
 
         }).catch((e) => {
-
-            console.error(e);
-    
-            toastr.clear();
-            toastr.error(e.message, e.name);
+            logError(e);
         });
     });
 }
@@ -361,34 +517,10 @@ function createContextMenu(table, portal) {
 
 function preview(id, title) {
 
-    require([
-        'esri/Map', 
-        'esri/views/MapView',  
-        'esri/layers/Layer'
-    ], 
-    function(
-        Map, 
-        MapView, 
-        Layer
-    ) {
+    require(['esri/layers/Layer'], function(Layer) {
 
-        var map = new Map({
-            basemap: 'streets'
-        });
-
-        var view = new MapView({
-            container: 'viewDiv',
-            map: map,
-            center: [-52, -30],
-            zoom: 6,
-        });
-
-        view.on('layerview-create', function (event) {
-
-            var layer = event.layer;
-    
-            console.info('[LAYER]: ' + layer.title + ' (' + layer.type + ') loaded');
-        });
+        app.map.removeAll();
+        app.view.popup.close();
 
         Layer.fromPortalItem({
             portalItem: {
@@ -399,43 +531,35 @@ function preview(id, title) {
 
             $('.loader').show();
     
-            map.add(layer);
+            app.map.add(layer);
 
             layer.when(function() {
     
-                layer.queryExtent().then(function(response) {
+                createLayerLegend(layer);
+                createLayerPopup(layer);
 
-                    console.log(response);
+                app.view.goTo(layer.fullExtent);
 
-                    createLayerLegend(view, layer);
-                    createLayerPopup(layer);
+                $('.loader').hide();
 
-                    view.goTo(response.extent);
-
-                    $('.loader').hide();
-
-                    $('#previewModal .modal-title').html(title);
-                    $('#previewModal').modal();
-                    $('#previewModal').modal('handleUpdate');
-                });
+                $('#previewModal .modal-title').html(title);
+                $('#previewModal').modal();
             });
         })
         .catch(function(e) {
-
-            console.error(e);
-
-            toastr.clear();
-            toastr.error(e.message, e.name);
+            logError(e);
         });
     });
 }
 
-function createLayerLegend(view, layer) {
+function createLayerLegend(layer) {
 
     require(['esri/widgets/Legend'], function(Legend) {
 
-        var legend = new Legend({
-            view: view,
+        app.view.ui.remove(app.legend);
+
+        app.legend = new Legend({
+            view: app.view,
             layerInfos: [
                 {
                     layer: layer
@@ -443,34 +567,39 @@ function createLayerLegend(view, layer) {
             ]
         });
 
-        view.ui.add(legend, 'bottom-right');
+        app.view.ui.add(app.legend, 'bottom-right');
     });
 }
 
 function createLayerPopup(layer) {
 
-    layer.on('layerview-create', function() {  
+    var fields = layer.source.layerDefinition.fields;
+    var layerFields = [];
 
-        var fields = layer.source.layerDefinition.fields;
-        var layerFields = [];
+    fields.forEach(function(field) {
 
-        fields.forEach(function(field) {
-
-            layerFields.push({
-                fieldName: field.name,
-                label: field.alias,
-                visible: true
-            });
+        layerFields.push({
+            fieldName: field.name,
+            label: field.alias,
+            visible: true
         });
-
-        var template = {
-            title: layer.title,
-            content: [{
-                type: 'fields',
-                fieldInfos: layerFields
-            }]
-        };
-        
-        layer.popupTemplate = template;
     });
+
+    var template = {
+        title: layer.title,
+        content: [{
+            type: 'fields',
+            fieldInfos: layerFields
+        }]
+    };
+        
+    layer.popupTemplate = template;
+}
+
+function logError(e) {
+
+    console.error(e);
+
+    toastr.clear();
+    toastr.error(e.message, e.name);
 }

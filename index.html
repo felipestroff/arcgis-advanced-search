@@ -44,7 +44,7 @@
                         </div>
                         <div class="modal-body">
                             <div class="form-group">
-                                <select id="root" class="form-control form-control-lg" onchange="verify(this)">
+                                <select id="urlSelect" class="form-control form-control-lg" onchange="verifyInput(this)">
                                     <option value="">Selecionar...</option>
                                     <option value="https://iede.hml.rs.gov.br">https://iede.hml.rs.gov.br</option>
                                     <option value="https://zee.rs.gov.br">https://zee.rs.gov.br</option>
@@ -54,7 +54,7 @@
                                 <strong>Ou</strong>
                             </div>
                             <div class="form-group">
-                                <input id="rootInput" type="url" placeholder="Inserir URL" class="form-control form-control-lg"/>
+                                <input id="urlInput" type="url" placeholder="Inserir URL" class="form-control form-control-lg"/>
                             </div>
                             <div class="form-group">
                                 <input id="groupID" class="form-control form-control-lg" type="text" placeholder="ID do Grupo" required>

@@ -51,12 +51,12 @@
                 </div>
 
                 <!-- Search Modal -->
-                <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="tituloModal" aria-hidden="true">
+                <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <form onsubmit="search(event)">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="tituloModal">ArcGIS REST API</h5>
+                                    <h5 class="modal-title">ArcGIS REST API</h5>
                                 </div>
                                 <div class="modal-body">
                                     <div class="form-group">
@@ -72,14 +72,35 @@
                                     <div class="form-group">
                                         <input id="urlInput" type="url" placeholder="Inserir URL" class="form-control form-control-lg"/>
                                     </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="group" id="groupID" value="id" onclick="filter(this);" required>
+                                        <label class="form-check-label" for="groupID">ID</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="group" id="groupName" value="name" onclick="filter(this);">
+                                        <label class="form-check-label" for="groupName">Nome</label>
+                                    </div>
+                                    <hr>
                                     <div class="form-group">
-                                        <input id="groupID" class="form-control form-control-lg" type="text" placeholder="ID do Grupo" required>
+                                        <input id="query" class="form-control form-control-lg" type="text" placeholder="Pesquisar...">
                                     </div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="submit" class="btn btn-primary">Continuar</button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group Select Modal -->
+                <div class="modal fade" id="groupModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Selecionar Grupo</h5>
+                            </div>
+                            <div class="modal-body"></div>
                         </div>
                     </div>
                 </div>

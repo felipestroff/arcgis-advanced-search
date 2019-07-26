@@ -1,5 +1,6 @@
 // Global app variables
 var app = {
+    filter: null,
     url: null,
     portal: null,
     map: null,
@@ -67,7 +68,7 @@ function search(e) {
     // Get params
     var urlSelect = document.getElementById('urlSelect').value;
     var urlInput = document.getElementById('urlInput').value;
-    var groupID = document.getElementById('groupID').value;
+    var query = document.getElementById('query').value;
 
     if (urlSelect !== '') {
         app.url = urlSelect;
@@ -80,119 +81,12 @@ function search(e) {
 
         app.portal = app.url + '/portal';
 
-        require(['esri/request', 'esri/config'], function (esriRequest, esriConfig, Portal) {
-
-            esriConfig.portalUrl = app.portal;
-
-            // Hide modal and show loading
-            $('#modal').modal('hide');
-            $('.loader').show();
-
-            // Set the data and response type
-            var body = new FormData();
-
-            body.append('f', 'json');
-
-            var options = {
-                query: {
-                    f: 'json'
-                },
-                responseType: 'json',
-                body: body
-            };
-
-            // * ArcGIS API for REST
-            // Request a Portal URL with group ID param
-            esriRequest(app.portal + '/sharing/rest/community/groups/' + groupID, options).then(function (response) {
-
-                document.getElementById('group').innerHTML = 'ArcGIS REST API - ' + response.data.title;
-                document.getElementById('user').innerHTML = response.data.userMembership.username;
-
-                esriRequest(app.portal + '/sharing/rest/content/groups/' + groupID, options).then(function (response) {
-
-                    generateToken();
-
-                    $('#menu').show();
-    
-                    var total = response.data.total;
-                    var columns = [
-                        {
-                            title: 'ID'
-                        },
-                        {
-                            title: 'URL'
-                        },
-                        {
-                            title: '',
-                        },
-                        {
-                            title: 'Nome'
-                        },
-                        {
-                            title: 'Tipo'
-                        },
-                    ];
-                    var data = [];
-                    var downloadData = [];
-    
-                    response.data.items.forEach(function(service) {
-
-                        var rows = [];
-                        var downloadRows = [];
-                        var thumbnail = '<img src="' + service.url + '/info/' + service.thumbnail + '" class="img-thumbnail img-item" crossorigin="anonymous">';
-    
-                        rows.push(service.id);
-                        rows.push(service.url);
-                        rows.push(thumbnail);
-                        rows.push(service.title);
-                        rows.push(service.type);
-    
-                        data.push(rows);
-    
-                        downloadRows.push(service.title);
-                        downloadData.push(downloadRows);
-                    });
-    
-                    // Init jQuery DataTable
-                    var table = createDataTable(columns, data);
-    
-                    // Init jQuery contextMenu
-                    createContextMenu(table);
-    
-                    $('#download').on('click', function () {
-    
-                        // Create a CSV file with table data
-                        var csvContent = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURI(downloadData.map(e => e.join(';')).join('\n'));
-                        var link = document.createElement('a');
-    
-                        link.setAttribute('href', csvContent);
-                        link.setAttribute('download', groupID + '.csv');
-                        document.body.appendChild(link);
-    
-                        link.click();
-                    });
-    
-                    // Hide loading
-                    $('.loader').hide();
-    
-                    // Show success alert
-                    toastr.success('', total + ' itens encontrados');
-
-                }).catch((e) => {
-                    logError(e);
-                });
-            }).catch((e) => {
-                    
-                setTimeout(function() { 
-
-                    logError(e);
-
-                    $('#modal').modal('show');
-                    $('.loader').hide();
-
-                }, 500);
-            });
-        });
+        if (app.filter === 'id') {
+            searchById(query);
+        }
+        else {
+            searchByName(query);
+        }
     }
 }
 
@@ -208,6 +102,290 @@ function verifyInput(el) {
     else {
         target.removeAttribute('disabled');
     }
+}
+
+function filter(el) {
+    app.filter = el.value;
+}
+
+function searchById(id) {
+
+    require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
+
+        esriConfig.portalUrl = app.portal;
+
+        // Hide modal and show loading
+        $('#modal').modal('hide');
+        $('.loader').show();
+
+        var options = {
+            query: {
+                f: 'json'
+            },
+            responseType: 'json'
+        };
+
+        esriRequest(app.portal + '/sharing/rest/community/groups/' + id, options).then(function (group) {
+
+            var access = group.data.access;
+            var title = group.data.title;
+            var username = group.data.userMembership ? group.data.userMembership.username : '';
+
+            esriRequest(app.portal + '/sharing/rest/content/groups/' + id, options).then(function (response) {
+
+                document.getElementById('group').innerHTML = 'ArcGIS REST API - ' + title;
+
+                if (access === 'private') {
+
+                    generateToken();
+
+                    document.getElementById('user').innerHTML = username;
+                }
+
+                $('#menu').show();
+
+                var total = response.data.total;
+                var columns = [
+                    {
+                        title: 'ID'
+                    },
+                    {
+                        title: 'URL'
+                    },
+                    {
+                        title: '',
+                    },
+                    {
+                        title: 'Nome'
+                    },
+                    {
+                        title: 'Tipo'
+                    },
+                ];
+                var data = [];
+                var downloadData = [];
+
+                response.data.items.forEach(function(service) {
+
+                    var rows = [];
+                    var downloadRows = [];
+                    var thumbnail = '<img src="' + service.url + '/info/' + service.thumbnail + '" class="img-thumbnail img-item" crossorigin="anonymous">';
+
+                    rows.push(service.id);
+                    rows.push(service.url);
+                    rows.push(thumbnail);
+                    rows.push(service.title);
+                    rows.push(service.type);
+
+                    data.push(rows);
+
+                    downloadRows.push(service.title);
+                    downloadData.push(downloadRows);
+                });
+
+                // Init jQuery DataTable
+                var table = createDataTable(columns, data);
+
+                // Init jQuery contextMenu
+                createContextMenu(table);
+
+                $('#download').on('click', function () {
+
+                    // Create a CSV file with table data
+                    var csvContent = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURI(downloadData.map(e => e.join(';')).join('\n'));
+                    var link = document.createElement('a');
+
+                    link.setAttribute('href', csvContent);
+                    link.setAttribute('download', id + '.csv');
+                    document.body.appendChild(link);
+
+                    link.click();
+                });
+
+                // Hide loading
+                $('.loader').hide();
+
+                // Show success alert
+                toastr.success('', total + ' itens encontrados');
+
+            }).catch((e) => {
+                logError(e);
+            });
+        }).catch((e) => {
+                
+            setTimeout(function() { 
+
+                logError(e);
+
+                $('#modal').modal('show');
+                $('.loader').hide();
+
+            }, 500);
+        });
+    });
+}
+
+function searchByName(name) {
+
+    require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
+
+        esriConfig.portalUrl = app.portal;
+
+        // Hide modal and show loading
+        $('#modal').modal('hide');
+        $('.loader').show();
+
+        var options = {
+            query: {
+                f: 'json',
+                q: name,
+            },
+            responseType: 'json'
+        };
+
+        esriRequest(app.portal + '/sharing/rest/community/groups', options).then(function (response) {
+
+            if (response.data.results.length) {
+
+                var groups = response.data.results;
+
+                options = {
+                    query: {
+                        f: 'json'
+                    },
+                    responseType: 'json'
+                };
+
+                toastr.clear();
+
+                $('#groupModal').modal({
+                    backdrop: 'static', 
+                    keyboard: false
+                });
+
+                groups.forEach(function(group, i) {
+
+                    $('#groupModal .modal-body').append(
+                        '<div class="form-check form-check-inline">' +
+                            '<input class="form-check-input" type="radio" name="groupSelect" id="groupSelect_' + i + '" value="' + group.id + '">' +
+                            '<label class="form-check-label" for="groupSelect_' + i + '">' + group.title + '</label>' + 
+                        '</div>'
+                    );
+
+                    $('#groupSelect_' + i).click(function() {
+
+                        $('#groupModal').modal('hide');
+        
+                        esriRequest(app.portal + '/sharing/rest/content/groups/' + group.id, options).then(function (result) {
+        
+                            var access = result.data.access;
+                            var username = result.data.userMembership ? result.data.userMembership.username : '';
+
+                            document.getElementById('group').innerHTML = 'ArcGIS REST API - ' + group.title;
+        
+                            if (access === 'private') {
+        
+                                generateToken();
+        
+                                document.getElementById('user').innerHTML = username;
+                            }
+        
+                            $('#menu').show();
+        
+                            var total = result.data.total;
+                            var columns = [
+                                {
+                                    title: 'ID'
+                                },
+                                {
+                                    title: 'URL'
+                                },
+                                {
+                                    title: '',
+                                },
+                                {
+                                    title: 'Nome'
+                                },
+                                {
+                                    title: 'Tipo'
+                                },
+                            ];
+                            var data = [];
+                            var downloadData = [];
+        
+                            result.data.items.forEach(function(service) {
+        
+                                var rows = [];
+                                var downloadRows = [];
+                                var thumbnail = '<img src="' + service.url + '/info/' + service.thumbnail + '" class="img-thumbnail img-item" crossorigin="anonymous">';
+        
+                                rows.push(service.id);
+                                rows.push(service.url);
+                                rows.push(thumbnail);
+                                rows.push(service.title);
+                                rows.push(service.type);
+        
+                                data.push(rows);
+        
+                                downloadRows.push(service.title);
+                                downloadData.push(downloadRows);
+                            });
+        
+                            // Init jQuery DataTable
+                            var table = createDataTable(columns, data);
+        
+                            // Init jQuery contextMenu
+                            createContextMenu(table);
+        
+                            $('#download').on('click', function () {
+        
+                                // Create a CSV file with table data
+                                var csvContent = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURI(downloadData.map(e => e.join(';')).join('\n'));
+                                var link = document.createElement('a');
+        
+                                link.setAttribute('href', csvContent);
+                                link.setAttribute('download', name + '.csv');
+                                document.body.appendChild(link);
+        
+                                link.click();
+                            });
+        
+                            // Hide loading
+                            $('.loader').hide();
+        
+                            // Show success alert
+                            toastr.success('', total + ' itens encontrados');
+        
+                        }).catch((e) => {
+                            logError(e);
+                        });
+                    });
+                });
+            }
+            else {
+
+                setTimeout(function() { 
+
+                    toastr.clear();
+                    toastr.info('', 'Nenhum resultado obtido');
+    
+                    $('#modal').modal('show');
+                    $('.loader').hide();
+    
+                }, 500);
+            }
+        }).catch((e) => {
+                
+            setTimeout(function() { 
+
+                logError(e);
+
+                $('#modal').modal('show');
+                $('.loader').hide();
+
+            }, 500);
+        });
+    });
 }
 
 function generateToken() {

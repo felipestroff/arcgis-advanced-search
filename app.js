@@ -1,10 +1,12 @@
+// Global app variables
 var app = {
     url: null,
+    portal: null,
     map: null,
     view: null,
     legend: null,
     token: null
-}
+};
 
 $(document).ready(function() {
 
@@ -15,6 +17,7 @@ $(document).ready(function() {
     });
     $('#previewModal').modal('handleUpdate');
 
+    // Init Bootstrap tooltip
     $('body').tooltip({selector: '[data-toggle="tooltip"]'});
 });
 
@@ -38,6 +41,10 @@ require(['esri/Map', 'esri/views/MapView', 'esri/widgets/Home'], function(Map, M
         console.info('[LAYER]: ' + layer.title + ' (' + layer.type + ') loaded');
     });
 
+    app.view.on('layerview-create-error', function (event) {
+        logError(e);
+    });
+
     app.view.on('layerview-destroy', function (event) {
 
         var layer = event.layer;
@@ -58,23 +65,24 @@ function search(e) {
     e.preventDefault();
 
     // Get params
-    var url = document.getElementById('urlSelect').value;
+    var urlSelect = document.getElementById('urlSelect').value;
     var urlInput = document.getElementById('urlInput').value;
-    var portal = url + '/portal';
     var groupID = document.getElementById('groupID').value;
 
-    if (url === '') {
-        url = urlInput;
-        portal = urlInput + '/portal';
+    if (urlSelect !== '') {
+        app.url = urlSelect;
+    }
+    else {
+        app.url = urlInput;
     }
 
-    if (url !== '') {
+    if (app.url !== '') {
+
+        app.portal = app.url + '/portal';
 
         require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
 
-            app.url = url;
-
-            esriConfig.portalUrl = portal;
+            esriConfig.portalUrl = app.portal;
 
             // Hide modal and show loading
             $('#modal').modal('hide');
@@ -91,18 +99,15 @@ function search(e) {
                 },
                 responseType: 'json',
                 body: body
-            }
+            };
 
             // * ArcGIS API for REST
             // Request a Portal URL with group ID param
-            esriRequest(portal + '/sharing/rest/content/groups/' + groupID, options).then(function (response) {
+            esriRequest(app.portal + '/sharing/rest/content/groups/' + groupID, options).then(function (response) {
 
-                generateToken(portal);
+                generateToken();
 
-                // Total of items
                 var total = response.data.total;
-
-                // Create table columns and data
                 var columns = [
                     {
                         title: 'ID'
@@ -120,14 +125,11 @@ function search(e) {
                         title: 'Tipo'
                     },
                 ];
-            
                 var data = [];
                 var downloadData = [];
 
-                // For each item/service in response
                 response.data.items.forEach(function(service) {
 
-                    // Create a row and push values into data
                     var rows = [];
                     var downloadRows = [];
                     var thumbnail = '<img src="' + service.url + '/info/thumbnail" class="img-thumbnail img-item" crossorigin="anonymous">';
@@ -137,17 +139,18 @@ function search(e) {
                     rows.push(thumbnail);
                     rows.push(service.title);
                     rows.push(service.type);
+
                     data.push(rows);
 
                     downloadRows.push(service.title);
                     downloadData.push(downloadRows);
                 });
 
-                // Init DataTables plugin with columns and data/rows
+                // Init jQuery DataTable
                 var table = createDataTable(columns, data);
 
                 // Init jQuery contextMenu
-                createContextMenu(table, portal);
+                createContextMenu(table);
 
                 $('#download').on('click', function () {
 
@@ -166,8 +169,7 @@ function search(e) {
                 $('.loader').hide();
 
                 // Show actions
-                $('#refresh').show();
-                $('#download').show();
+                $('.actions-btn').show();
 
                 // Show success alert
                 toastr.success('', total + ' itens encontrados');
@@ -202,7 +204,7 @@ function verifyInput(el) {
     }
 }
 
-function generateToken(portal) {
+function generateToken() {
 
     require(['esri/request'], function(esriRequest) {
 
@@ -220,7 +222,7 @@ function generateToken(portal) {
             body: data
         };
 
-        esriRequest(portal + '/sharing/rest/generateToken', options).then(function(response) {
+        esriRequest(app.portal + '/sharing/rest/generateToken', options).then(function(response) {
 
             app.token = response.data.token;
 
@@ -232,6 +234,7 @@ function generateToken(portal) {
     });
 }
 
+// TODO
 function extractData(layerUrl, format) {
 
     require(['esri/tasks/Geoprocessor', 'esri/request'], function(Geoprocessor, esriRequest) {
@@ -325,7 +328,7 @@ function downloadGeojson(url, title) {
                 f: 'geojson'
             },
             responseType: 'json'
-        }
+        };
 
         esriRequest(url + '/0/query', options).then(function(response) {
 
@@ -385,20 +388,20 @@ function createDataTable(columns, data) {
     return table;
 }
 
-function createContextMenu(table, portal) {
+function createContextMenu(table) {
 
     $.contextMenu({
         selector: '#table tbody tr',
         callback: function(key) {
 
             var target = this;
+            var rowData = table.row(target).data();
+            var id = rowData[0];
+            var url = rowData[1];
+            var title = rowData[3];
 
             switch (key) {
                 case 'view':
-
-                    var rowData = table.row(target).data();
-                    var id = rowData[0];
-                    var title = rowData[3];
 
                     preview(id, title);
 
@@ -406,26 +409,17 @@ function createContextMenu(table, portal) {
 
                 case 'portal':
 
-                    var rowData = table.row(target).data();
-                    var id = rowData[0];
-
-                    window.open(portal + '/home/item.html?id=' + id, '_blank');
+                    window.open(app.portal + '/home/item.html?id=' + id, '_blank');
 
                     break;
 
                 case 'mapViewer':
 
-                    var rowData = table.row(target).data();
-                    var id = rowData[0];
-
-                    window.open(portal + '/home/webmap/viewer.html?useExisting=1&layers=' + id, '_blank');
+                    window.open(app.portal + '/home/webmap/viewer.html?useExisting=1&layers=' + id, '_blank');
 
                     break;
 
                 case 'rest':
-
-                    var rowData = table.row(target).data();
-                    var url = rowData[1];
 
                     window.open(url, '_blank');
         
@@ -433,18 +427,11 @@ function createContextMenu(table, portal) {
 
                 case 'metadata':
 
-                    var rowData = table.row(target).data();
-                    var id = rowData[0];
-
-                    window.open(portal + '/sharing/rest/content/items/' + id + '/info/metadata/metadata.xml?format=default&output=html', '_blank');
+                    window.open(app.portal + '/sharing/rest/content/items/' + id + '/info/metadata/metadata.xml?format=default&output=html', '_blank');
 
                     break;
 
                 case 'geojson':
-
-                    var rowData = table.row(target).data();
-                    var url = rowData[1];
-                    var title = rowData[3];
 
                     downloadGeojson(url, title);
 
@@ -470,7 +457,6 @@ function createContextMenu(table, portal) {
                         disabled: function() { 
 
                             var target = this;
-
                             var rowData = table.row(target).data();
                             var type = rowData[4];
 
@@ -501,7 +487,6 @@ function createContextMenu(table, portal) {
                 disabled: function() { 
 
                     var target = this;
-
                     var rowData = table.row(target).data();
                     var type = rowData[4];
 
@@ -600,6 +585,8 @@ function createLayerPopup(layer) {
 function logError(e) {
 
     console.error(e);
+
+    $('.loader').hide();
 
     toastr.clear();
     toastr.error(e.message, e.name);

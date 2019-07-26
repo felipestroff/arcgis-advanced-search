@@ -19,71 +19,89 @@
             <div class="loader-text">Carregando...</div>
         </div>
 
-        <!-- Actions -->
-        <div id="actions">
-            <button id="refresh" class="btn btn-primary btn-sm actions-btn" data-toggle="tooltip" title="Recarregar" onclick="location.reload();">
-                <i class="fas fa-sync"></i>
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+            <a id="group" class="navbar-brand" href="#">ArcGIS REST API</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#menu" aria-controls="menu" aria-expanded="false" aria-label="Menu">
+                <span class="navbar-toggler-icon"></span>
             </button>
-            <button id="download" class="btn btn-success btn-sm actions-btn" data-toggle="tooltip" title="Baixar lista">
-                <i class="fas fa-download"></i>
-            </button>
-        </div>
+            <div id="menu" class="collapse navbar-collapse" style="display: none !important;">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item dropdown active">
+                        <a id="user" class="nav-link dropdown-toggle" href="#" id="dropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                        <div class="dropdown-menu" aria-labelledby="dropdown">
+                            <a class="dropdown-item" href="">
+                                <i class="fas fa-power-off"></i> Sair
+                            </a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a id="download" class="nav-link" href="#">Baixar dados</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
 
-        <!-- Data Table -->
-        <div class="table-responsive">
-            <table id="table" class="table table-bordered table-striped table-hover"></table>
-        </div>
+        <main role="main" class="container-fluid">
+            <div class="starter-template">
+                
+                <!-- Data Table -->
+                <div class="table-responsive">
+                    <table id="table" class="table table-bordered table-striped table-hover"></table>
+                </div>
 
-        <!-- Search Modal -->
-        <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="tituloModal" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <form onsubmit="search(event)">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="tituloModal">ArcGIS REST API</h5>
+                <!-- Search Modal -->
+                <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="tituloModal" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <form onsubmit="search(event)">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="tituloModal">ArcGIS REST API</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <select id="urlSelect" class="form-control form-control-lg" onchange="verifyInput(this)">
+                                            <option value="">Selecionar...</option>
+                                            <option value="https://iede.hml.rs.gov.br">https://iede.hml.rs.gov.br</option>
+                                            <option value="https://zee.rs.gov.br">https://zee.rs.gov.br</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group text-center">
+                                        <strong>Ou</strong>
+                                    </div>
+                                    <div class="form-group">
+                                        <input id="urlInput" type="url" placeholder="Inserir URL" class="form-control form-control-lg"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <input id="groupID" class="form-control form-control-lg" type="text" placeholder="ID do Grupo" required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">Continuar</button>
+                                </div>
+                            </form>
                         </div>
-                        <div class="modal-body">
-                            <div class="form-group">
-                                <select id="urlSelect" class="form-control form-control-lg" onchange="verifyInput(this)">
-                                    <option value="">Selecionar...</option>
-                                    <option value="https://iede.hml.rs.gov.br">https://iede.hml.rs.gov.br</option>
-                                    <option value="https://zee.rs.gov.br">https://zee.rs.gov.br</option>
-                                </select>
+                    </div>
+                </div>
+
+                <!-- Map Preview Modal -->
+                <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-xl" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"></h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
                             </div>
-                            <div class="form-group text-center">
-                                <strong>Ou</strong>
-                            </div>
-                            <div class="form-group">
-                                <input id="urlInput" type="url" placeholder="Inserir URL" class="form-control form-control-lg"/>
-                            </div>
-                            <div class="form-group">
-                                <input id="groupID" class="form-control form-control-lg" type="text" placeholder="ID do Grupo" required>
+                            <div class="modal-body">
+                                <div id="viewDiv"></div>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Continuar</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Map Preview Modal -->
-        <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-xl" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title"></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div id="viewDiv"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </main>
 
         <!-- Scripts -->
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>

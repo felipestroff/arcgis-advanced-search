@@ -1,23 +1,6 @@
-html {
-    padding: 10px;
-}
-
-#actions {
-    position: fixed;
-    top: 40%;
-    z-index: 1;
-    display: grid;
-}
-
-.actions-btn {
-    cursor: pointer;
-    opacity: 0.5;
-    display: none;
-    margin-top: 5px;
-}
-
-.actions-btn:hover {
-    opacity: 1;
+.starter-template {
+    padding-top: 71px;
+    padding-bottom: 13px;
 }
 
 #table {

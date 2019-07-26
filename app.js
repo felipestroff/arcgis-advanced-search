@@ -80,7 +80,7 @@ function search(e) {
 
         app.portal = app.url + '/portal';
 
-        require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
+        require(['esri/request', 'esri/config'], function (esriRequest, esriConfig, Portal) {
 
             esriConfig.portalUrl = app.portal;
 
@@ -103,80 +103,86 @@ function search(e) {
 
             // * ArcGIS API for REST
             // Request a Portal URL with group ID param
-            esriRequest(app.portal + '/sharing/rest/content/groups/' + groupID, options).then(function (response) {
+            esriRequest(app.portal + '/sharing/rest/community/groups/' + groupID, options).then(function (response) {
 
-                generateToken();
+                document.getElementById('group').innerHTML = 'ArcGIS REST API - ' + response.data.title;
+                document.getElementById('user').innerHTML = response.data.userMembership.username;
 
-                var total = response.data.total;
-                var columns = [
-                    {
-                        title: 'ID'
-                    },
-                    {
-                        title: 'URL'
-                    },
-                    {
-                        title: '',
-                    },
-                    {
-                        title: 'Nome'
-                    },
-                    {
-                        title: 'Tipo'
-                    },
-                ];
-                var data = [];
-                var downloadData = [];
+                esriRequest(app.portal + '/sharing/rest/content/groups/' + groupID, options).then(function (response) {
 
-                response.data.items.forEach(function(service) {
+                    generateToken();
 
-                    var rows = [];
-                    var downloadRows = [];
-                    var thumbnail = '<img src="' + service.url + '/info/thumbnail" class="img-thumbnail img-item" crossorigin="anonymous">';
+                    $('#menu').show();
+    
+                    var total = response.data.total;
+                    var columns = [
+                        {
+                            title: 'ID'
+                        },
+                        {
+                            title: 'URL'
+                        },
+                        {
+                            title: '',
+                        },
+                        {
+                            title: 'Nome'
+                        },
+                        {
+                            title: 'Tipo'
+                        },
+                    ];
+                    var data = [];
+                    var downloadData = [];
+    
+                    response.data.items.forEach(function(service) {
 
-                    rows.push(service.id);
-                    rows.push(service.url);
-                    rows.push(thumbnail);
-                    rows.push(service.title);
-                    rows.push(service.type);
+                        var rows = [];
+                        var downloadRows = [];
+                        var thumbnail = '<img src="' + service.url + '/info/' + service.thumbnail + '" class="img-thumbnail img-item" crossorigin="anonymous">';
+    
+                        rows.push(service.id);
+                        rows.push(service.url);
+                        rows.push(thumbnail);
+                        rows.push(service.title);
+                        rows.push(service.type);
+    
+                        data.push(rows);
+    
+                        downloadRows.push(service.title);
+                        downloadData.push(downloadRows);
+                    });
+    
+                    // Init jQuery DataTable
+                    var table = createDataTable(columns, data);
+    
+                    // Init jQuery contextMenu
+                    createContextMenu(table);
+    
+                    $('#download').on('click', function () {
+    
+                        // Create a CSV file with table data
+                        var csvContent = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURI(downloadData.map(e => e.join(';')).join('\n'));
+                        var link = document.createElement('a');
+    
+                        link.setAttribute('href', csvContent);
+                        link.setAttribute('download', groupID + '.csv');
+                        document.body.appendChild(link);
+    
+                        link.click();
+                    });
+    
+                    // Hide loading
+                    $('.loader').hide();
+    
+                    // Show success alert
+                    toastr.success('', total + ' itens encontrados');
 
-                    data.push(rows);
-
-                    downloadRows.push(service.title);
-                    downloadData.push(downloadRows);
+                }).catch((e) => {
+                    logError(e);
                 });
-
-                // Init jQuery DataTable
-                var table = createDataTable(columns, data);
-
-                // Init jQuery contextMenu
-                createContextMenu(table);
-
-                $('#download').on('click', function () {
-
-                    // Create a CSV file with table data
-                    var csvContent = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURI(downloadData.map(e => e.join(';')).join('\n'));
-                    var link = document.createElement('a');
-
-                    link.setAttribute('href', csvContent);
-                    link.setAttribute('download', groupID + '.csv');
-                    document.body.appendChild(link);
-
-                    link.click();
-                });
-
-                // Hide loading
-                $('.loader').hide();
-
-                // Show actions
-                $('.actions-btn').show();
-
-                // Show success alert
-                toastr.success('', total + ' itens encontrados');
-
-            // if errors
             }).catch((e) => {
-                
+                    
                 setTimeout(function() { 
 
                     logError(e);
@@ -254,9 +260,6 @@ function extractData(layerUrl, format) {
         data.append('dataFormat', format);
         data.append('f', 'pjson');
 
-        console.log(JSON.stringify(inputLayers));
-        console.log(format);
-
         var geoprocessor = new Geoprocessor({
             url: url,
             requestOptions: {
@@ -273,13 +276,11 @@ function extractData(layerUrl, format) {
 
         geoprocessor.submitJob().then(function(result) {
 
-            console.log(result);
-
             if (result.jobStatus === 'job-succeeded') {
                     
                 esriRequest(url + '/jobs/' + result.jobId + '/results/contentID?f=json', options).then(function(response) {
 
-                    console.log(response);
+                    // TODO
                 });
             }
             else {

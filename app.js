@@ -73,6 +73,7 @@ function search(e) {
         require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
 
             app.url = url;
+
             esriConfig.portalUrl = portal;
 
             // Hide modal and show loading
@@ -271,7 +272,7 @@ function extractData(layerUrl, format) {
 
             console.log(result);
 
-            if (result.jobStatus === 'job-success') {
+            if (result.jobStatus === 'job-succeeded') {
                     
                 esriRequest(url + '/jobs/' + result.jobId + '/results/contentID?f=json', options).then(function(response) {
 

@@ -72,24 +72,23 @@ function search(e) {
     var urlSelect = document.getElementById('urlSelect');
     var urlInput = document.getElementById('urlInput');
     var query = document.getElementById('query');
+    var url;
 
     if (urlSelect.value !== '') {
 
-        var url = new URL(urlSelect.value);
-        var origin = url.origin;
+        url = new URL(urlSelect.value);
 
-        app.url = origin;
-        app.portal = url;
+        app.url = url.origin;
+        app.portal = url.href;
 
         urlInput.removeAttribute('required');
     }
     else if (urlInput.value !== '') {
 
-        var url = new URL(urlInput.value);
-        var origin = url.origin;
+        url = new URL(urlInput.value);
 
-        app.url = origin;
-        app.portal = url;
+        app.url = url.origin;
+        app.portal = url.href;
 
         urlSelect.removeAttribute('required');
     }
@@ -168,7 +167,6 @@ function searchById(id) {
 
         esriRequest(app.portal + '/sharing/rest/community/groups/' + id, options).then(function (group) {
 
-            var access = group.data.access;
             var title = group.data.title;
             var username = group.data.userMembership ? group.data.userMembership.username : '';
 
@@ -188,21 +186,19 @@ function searchById(id) {
                     },
                     body: data
                 };
+
+                generateToken(username, password);
+
+                document.getElementById('user').innerHTML = username;
+            }
+            else {
+
+                document.getElementById('user').innerHTML = 'Anônimo';
             }
 
+            document.getElementById('group').innerHTML = 'ArcGIS REST API - ' + title;
+
             esriRequest(app.portal + '/sharing/rest/content/groups/' + id, options).then(function (response) {
-
-                document.getElementById('group').innerHTML = 'ArcGIS REST API - ' + title;
-
-                if (access === 'private') {
-
-                    generateToken();
-
-                    document.getElementById('user').innerHTML = username;
-                }
-                else {
-                    document.getElementById('user').innerHTML = 'Anônimo';
-                }
 
                 $('#menu').show();
 
@@ -231,7 +227,14 @@ function searchById(id) {
 
                     var rows = [];
                     var downloadRows = [];
-                    var thumbnail = '<img src="' + service.url + '/info/' + service.thumbnail + '" class="img-thumbnail img-item">';
+                    var thumbnail;
+
+                    if (service.thumbnail) {
+                        thumbnail = '<img src="' + app.portal + '/sharing/rest/content/items/' + service.id + '/info/' + service.thumbnail + '?token=' + app.token + '" class="img-thumbnail img-item">';
+                    }
+                    else {
+                        thumbnail = '<img src="images/default_thumb.png" class="img-thumbnail img-item">';
+                    }
 
                     rows.push(service.id);
                     rows.push(service.url);
@@ -341,20 +344,8 @@ function searchByName(name) {
 
                         esriRequest(app.portal + '/sharing/rest/content/groups/' + group.id, options).then(function (result) {
 
-                            var access = result.data.access;
-                            var username = result.data.userMembership ? result.data.userMembership.username : '';
-
                             document.getElementById('group').innerHTML = 'ArcGIS REST API - ' + group.title;
-        
-                            if (access === 'private') {
-        
-                                generateToken();
-        
-                                document.getElementById('user').innerHTML = username;
-                            }
-                            else {
-                                document.getElementById('user').innerHTML = 'Anônimo';
-                            }
+                            document.getElementById('user').innerHTML = 'Anônimo';
         
                             $('#menu').show();
         
@@ -380,11 +371,18 @@ function searchByName(name) {
                             var downloadData = [];
         
                             result.data.items.forEach(function(service) {
-        
+
                                 var rows = [];
                                 var downloadRows = [];
-                                var thumbnail = '<img src="' + service.url + '/info/' + service.thumbnail + '" class="img-thumbnail img-item">';
+                                var thumbnail;
         
+                                if (service.thumbnail) {
+                                    thumbnail = '<img src="' + app.portal + '/sharing/rest/content/items/' + service.id + '/info/' + service.thumbnail + '" class="img-thumbnail img-item">';
+                                }
+                                else {
+                                    thumbnail = '<img src="images/default_thumb.png" class="img-thumbnail img-item">';
+                                }
+
                                 rows.push(service.id);
                                 rows.push(service.url);
                                 rows.push(thumbnail);
@@ -454,13 +452,11 @@ function searchByName(name) {
     });
 }
 
-function generateToken() {
+function generateToken(username, password) {
 
     require(['esri/request'], function(esriRequest) {
 
         var data = new FormData();
-        var username = document.getElementById('dijit_form_ValidationTextBox_0').value;
-        var password = document.getElementById('dijit_form_ValidationTextBox_1').value;
 
         data.append('username', username);
         data.append('password', password);

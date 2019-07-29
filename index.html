@@ -51,7 +51,7 @@
                 </div>
 
                 <!-- Search Modal -->
-                <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <form onsubmit="search(event)">
@@ -62,8 +62,9 @@
                                     <div class="form-group">
                                         <select id="urlSelect" class="form-control form-control-lg" onchange="verifyInput(this)">
                                             <option value="">Selecionar...</option>
-                                            <option value="https://iede.hml.rs.gov.br">https://iede.hml.rs.gov.br</option>
-                                            <option value="https://zee.rs.gov.br">https://zee.rs.gov.br</option>
+                                            <option value="https://iede.hml.rs.gov.br">https://iede.hml.rs.gov.br (Homologação)</option>
+                                            <option value="https://iede.rs.gov.br">https://iede.rs.gov.br (Produção)</option>
+                                            <option value="https://zee.rs.gov.br">https://zee.rs.gov.br (Produção)</option>
                                         </select>
                                     </div>
                                     <div class="form-group text-center">
@@ -74,11 +75,18 @@
                                     </div>
                                     <div class="custom-control custom-radio custom-control-inline">
                                         <input class="custom-control-input" type="radio" name="group" id="groupID" value="id" onclick="filter(this);" required>
-                                        <label class="custom-control-label" for="groupID">ID</label>
+                                        <label class="custom-control-label" for="groupID">
+                                            ID
+                                            <i class="fas fa-globe-americas"></i>
+                                            <i class="fas fa-lock"></i>
+                                        </label>
                                     </div>
                                     <div class="custom-control custom-radio custom-control-inline">
                                         <input class="custom-control-input" type="radio" name="group" id="groupName" value="name" onclick="filter(this);">
-                                        <label class="custom-control-label" for="groupName">Nome</label>
+                                        <label class="custom-control-label" for="groupName">
+                                            Nome
+                                            <i class="fas fa-globe-americas"></i>
+                                        </label>
                                     </div>
                                     <div id="alerts"></div>
                                     <hr>
@@ -95,7 +103,7 @@
                 </div>
 
                 <!-- Group Select Modal -->
-                <div class="modal fade" id="groupModal" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal fade" id="groupModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <div class="modal-header">

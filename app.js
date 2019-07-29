@@ -133,7 +133,7 @@ function filter(el) {
         var info = document.createElement('div');
 
         info.classList.add('alert', 'alert-info');
-        info.innerHTML = 'Busca por nome funcionará somente em <b>grupos públicos</b>.';
+        info.innerHTML = 'Busca por <b>Nome</b> funcionará somente em <b>grupos públicos</b>.';
 
         alerts.appendChild(info);
     }
@@ -147,6 +147,9 @@ function searchById(id) {
 
     require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
 
+        var trustedHost = app.url.replace(/^https?\:\/\//i, '');
+
+        esriConfig.request.trustedServers.push(trustedHost);
         esriConfig.portalUrl = app.portal;
 
         // Hide modal and show loading
@@ -156,8 +159,7 @@ function searchById(id) {
         var options = {
             query: {
                 f: 'json'
-            },
-            responseType: 'json'
+            }
         };
 
         esriRequest(app.portal + '/sharing/rest/community/groups/' + id, options).then(function (group) {
@@ -165,6 +167,24 @@ function searchById(id) {
             var access = group.data.access;
             var title = group.data.title;
             var username = group.data.userMembership ? group.data.userMembership.username : '';
+
+            if (username !== '') {
+
+                var data = new FormData();
+                var password = document.getElementById('dijit_form_ValidationTextBox_1').value;
+
+                data.append('username', username);
+                data.append('password', password);
+                data.append('client', 'requestip');
+                data.append('f', 'json');
+
+                options = {
+                    query: {
+                        f: 'json',
+                    },
+                    body: data
+                };
+            }
 
             esriRequest(app.portal + '/sharing/rest/content/groups/' + id, options).then(function (response) {
 
@@ -207,7 +227,7 @@ function searchById(id) {
 
                     var rows = [];
                     var downloadRows = [];
-                    var thumbnail = '<img src="' + service.url + '/info/' + service.thumbnail + '" class="img-thumbnail img-item" crossorigin="anonymous">';
+                    var thumbnail = '<img src="' + service.url + '/info/' + service.thumbnail + '" class="img-thumbnail img-item">';
 
                     rows.push(service.id);
                     rows.push(service.url);
@@ -267,6 +287,9 @@ function searchByName(name) {
 
     require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
 
+        var trustedHost = app.url.replace(/^https?\:\/\//i, '');
+
+        esriConfig.request.trustedServers.push(trustedHost);
         esriConfig.portalUrl = app.portal;
 
         // Hide modal and show loading
@@ -277,8 +300,7 @@ function searchByName(name) {
             query: {
                 f: 'json',
                 q: name,
-            },
-            responseType: 'json'
+            }
         };
 
         esriRequest(app.portal + '/sharing/rest/community/groups', options).then(function (response) {
@@ -289,9 +311,8 @@ function searchByName(name) {
 
                 options = {
                     query: {
-                        f: 'json'
-                    },
-                    responseType: 'json'
+                        f: 'json',
+                    }
                 };
 
                 toastr.clear();
@@ -313,9 +334,9 @@ function searchByName(name) {
                     $('#groupSelect_' + i).click(function() {
 
                         $('#groupModal').modal('hide');
-        
+
                         esriRequest(app.portal + '/sharing/rest/content/groups/' + group.id, options).then(function (result) {
-        
+
                             var access = result.data.access;
                             var username = result.data.userMembership ? result.data.userMembership.username : '';
 
@@ -358,7 +379,7 @@ function searchByName(name) {
         
                                 var rows = [];
                                 var downloadRows = [];
-                                var thumbnail = '<img src="' + service.url + '/info/' + service.thumbnail + '" class="img-thumbnail img-item" crossorigin="anonymous">';
+                                var thumbnail = '<img src="' + service.url + '/info/' + service.thumbnail + '" class="img-thumbnail img-item">';
         
                                 rows.push(service.id);
                                 rows.push(service.url);

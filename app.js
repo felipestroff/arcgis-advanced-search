@@ -16,6 +16,9 @@ $(document).ready(function() {
         backdrop: 'static', 
         keyboard: false
     });
+
+    $('#modal').modal('handleUpdate');
+    $('#groupModal').modal('handleUpdate');
     $('#previewModal').modal('handleUpdate');
 
     // Init Bootstrap tooltip
@@ -66,15 +69,21 @@ function search(e) {
     e.preventDefault();
 
     // Get params
-    var urlSelect = document.getElementById('urlSelect').value;
-    var urlInput = document.getElementById('urlInput').value;
+    var urlSelect = document.getElementById('urlSelect');
+    var urlInput = document.getElementById('urlInput');
     var query = document.getElementById('query').value;
 
-    if (urlSelect !== '') {
-        app.url = urlSelect;
+    if (urlSelect.value !== '') {
+
+        urlInput.removeAttribute('required');
+
+        app.url = urlSelect.value;
     }
     else {
-        app.url = urlInput;
+
+        urlSelect.removeAttribute('required');
+
+        app.url = urlInput.value;
     }
 
     if (app.url !== '') {
@@ -88,6 +97,9 @@ function search(e) {
             searchByName(query);
         }
     }
+    else {
+        urlInput.setAttribute('required', true);
+    }
 }
 
 function verifyInput(el) {
@@ -97,15 +109,38 @@ function verifyInput(el) {
     if (el.value !== '') {
 
         target.setAttribute('disabled', true);
+        target.removeAttribute('required');
         target.value = '';
+
+        el.setAttribute('required', true);
     }
     else {
+        target.setAttribute('required', true);
         target.removeAttribute('disabled');
+
+        el.removeAttribute('required');
     }
 }
 
 function filter(el) {
+
+    var alerts = document.getElementById('alerts');
+
     app.filter = el.value;
+
+    if (el.value === 'name') {
+
+        var info = document.createElement('div');
+
+        info.classList.add('alert', 'alert-info');
+        info.innerHTML = 'Busca por nome funcionará somente em <b>grupos públicos</b>.';
+
+        alerts.appendChild(info);
+    }
+    else {
+
+        alerts.innerHTML = '';
+    }
 }
 
 function searchById(id) {
@@ -140,6 +175,9 @@ function searchById(id) {
                     generateToken();
 
                     document.getElementById('user').innerHTML = username;
+                }
+                else {
+                    document.getElementById('user').innerHTML = 'Anônimo';
                 }
 
                 $('#menu').show();
@@ -266,9 +304,9 @@ function searchByName(name) {
                 groups.forEach(function(group, i) {
 
                     $('#groupModal .modal-body').append(
-                        '<div class="form-check form-check-inline">' +
-                            '<input class="form-check-input" type="radio" name="groupSelect" id="groupSelect_' + i + '" value="' + group.id + '">' +
-                            '<label class="form-check-label" for="groupSelect_' + i + '">' + group.title + '</label>' + 
+                        '<div class="custom-control custom-radio custom-control-inline">' +
+                            '<input class="custom-control-input" type="radio" name="groupSelect" id="groupSelect_' + i + '" value="' + group.id + '">' +
+                            '<label class="custom-control-label" for="groupSelect_' + i + '">' + group.title + '</label>' + 
                         '</div>'
                     );
 
@@ -288,6 +326,9 @@ function searchByName(name) {
                                 generateToken();
         
                                 document.getElementById('user').innerHTML = username;
+                            }
+                            else {
+                                document.getElementById('user').innerHTML = 'Anônimo';
                             }
         
                             $('#menu').show();

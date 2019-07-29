@@ -71,54 +71,58 @@ function search(e) {
     // Get params
     var urlSelect = document.getElementById('urlSelect');
     var urlInput = document.getElementById('urlInput');
-    var query = document.getElementById('query').value;
+    var query = document.getElementById('query');
 
     if (urlSelect.value !== '') {
 
-        urlInput.removeAttribute('required');
+        var url = new URL(urlSelect.value);
+        var origin = url.origin;
 
-        app.url = urlSelect.value;
+        app.url = origin;
+        app.portal = url;
+
+        urlInput.removeAttribute('required');
     }
-    else {
+    else if (urlInput.value !== '') {
+
+        var url = new URL(urlInput.value);
+        var origin = url.origin;
+
+        app.url = origin;
+        app.portal = url;
 
         urlSelect.removeAttribute('required');
-
-        app.url = urlInput.value;
     }
 
-    if (app.url !== '') {
-
-        app.portal = app.url + '/portal';
+    if (app.url !== null) {
 
         if (app.filter === 'id') {
-            searchById(query);
+            searchById(query.value);
         }
         else {
-            searchByName(query);
+            searchByName(query.value);
         }
-    }
-    else {
-        urlInput.setAttribute('required', true);
     }
 }
 
-function verifyInput(el) {
+function verifyInput() {
 
-    var target = document.getElementById('urlInput');
+    var select = document.getElementById('urlSelect');
+    var input = document.getElementById('urlInput');
     
-    if (el.value !== '') {
+    if (select.value !== '') {
 
-        target.setAttribute('disabled', true);
-        target.removeAttribute('required');
-        target.value = '';
+        input.setAttribute('disabled', true);
+        input.removeAttribute('required');
+        input.value = '';
 
-        el.setAttribute('required', true);
+        select.setAttribute('required', true);
     }
     else {
-        target.setAttribute('required', true);
-        target.removeAttribute('disabled');
+        input.setAttribute('required', true);
+        input.removeAttribute('disabled');
 
-        el.removeAttribute('required');
+        select.removeAttribute('required');
     }
 }
 

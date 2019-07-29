@@ -54,17 +54,17 @@
                 <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
-                            <form onsubmit="search(event)">
+                            <form onsubmit="search(event); verifyInput();">
                                 <div class="modal-header">
                                     <h5 class="modal-title">ArcGIS REST API</h5>
                                 </div>
                                 <div class="modal-body">
                                     <div class="form-group">
-                                        <select id="urlSelect" class="form-control form-control-lg" onchange="verifyInput(this)">
-                                            <option value="">Selecionar...</option>
-                                            <option value="https://iede.hml.rs.gov.br">https://iede.hml.rs.gov.br (Homologação)</option>
-                                            <option value="https://iede.rs.gov.br">https://iede.rs.gov.br (Produção)</option>
-                                            <option value="https://zee.rs.gov.br">https://zee.rs.gov.br (Produção)</option>
+                                        <select id="urlSelect" class="form-control form-control-lg" onchange="verifyInput()">
+                                            <option value="">Selecionar Portal...</option>
+                                            <option value="https://iede.hml.rs.gov.br/portal">https://iede.hml.rs.gov.br/portal (Homologação)</option>
+                                            <option value="https://iede.rs.gov.br/portal">https://iede.rs.gov.br/portal (Produção)</option>
+                                            <option value="https://zee.rs.gov.br/portal">https://zee.rs.gov.br/portal (Produção)</option>
                                         </select>
                                     </div>
                                     <div class="form-group text-center">

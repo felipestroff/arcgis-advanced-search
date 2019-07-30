@@ -210,6 +210,9 @@ function searchById(id) {
                     {
                         title: 'Tipo'
                     },
+                    {
+                        title: 'Proprietário(a)'
+                    }
                 ];
                 var data = [];
                 var downloadData = [];
@@ -240,6 +243,7 @@ function searchById(id) {
                     rows.push(thumbnail);
                     rows.push(service.title);
                     rows.push(service.type);
+                    rows.push(service.owner);
 
                     data.push(rows);
 
@@ -369,6 +373,9 @@ function searchByName(name) {
                                 {
                                     title: 'Tipo'
                                 },
+                                {
+                                    title: 'Proprietário(a)'
+                                }
                             ];
                             var data = [];
                             var downloadData = [];
@@ -378,6 +385,7 @@ function searchByName(name) {
                                 var rows = [];
                                 var downloadRows = [];
                                 var thumbnail;
+                                var perfil = '<a href="' + app.portal + '/home/user.html?user=' + service.owner + '" target="_blank">' + service.owner + '</a>';
         
                                 if (service.thumbnail) {
                                     thumbnail = '<img id="thumbnail_' + index + '" src="' + app.portal + '/sharing/rest/content/items/' + service.id + '/info/' + service.thumbnail + '" class="img-thumbnail img-item">';
@@ -391,6 +399,7 @@ function searchByName(name) {
                                 rows.push(thumbnail);
                                 rows.push(service.title);
                                 rows.push(service.type);
+                                rows.push(perfil);
         
                                 data.push(rows);
         
@@ -643,129 +652,204 @@ function createDataTable(columns, data) {
 
 function createContextMenu(table) {
 
-    $.contextMenu({
-        selector: '#table tbody tr',
-        callback: function(key) {
+    require(['esri/request'], function (esriRequest) {
 
-            var target = this;
-            var rowData = table.row(target).data();
-            var id = rowData[0];
-            var url = rowData[1];
-            var title = rowData[3];
+        $.contextMenu({
+            selector: '#table tbody tr',
+            callback: function(key) {
 
-            switch (key) {
-                case 'view':
+                var target = this;
+                var rowData = table.row(target).data();
+                var id = rowData[0];
+                var url = rowData[1];
+                var title = rowData[3];
 
-                    preview(id, title);
+                switch (key) {
+                    case 'view':
 
-                    break;
+                        preview(id, title);
 
-                case 'portal':
+                        break;
 
-                    window.open(app.portal + '/home/item.html?id=' + id, '_blank');
+                    case 'portal':
 
-                    break;
+                        window.open(app.portal + '/home/item.html?id=' + id, '_blank');
 
-                case 'mapViewer':
+                        break;
 
-                    window.open(app.portal + '/home/webmap/viewer.html?useExisting=1&layers=' + id, '_blank');
+                    case 'mapViewer':
 
-                    break;
+                        window.open(app.portal + '/home/webmap/viewer.html?useExisting=1&layers=' + id, '_blank');
 
-                case 'url':
+                        break;
 
-                    window.open(url, '_blank');
-        
-                    break;
+                    case 'url':
 
-                case 'metadata':
+                        window.open(url, '_blank');
+            
+                        break;
 
-                    window.open(app.portal + '/sharing/rest/content/items/' + id + '/info/metadata/metadata.xml?format=default&output=html', '_blank');
+                    case 'metadata':
 
-                    break;
+                        window.open(app.portal + '/sharing/rest/content/items/' + id + '/info/metadata/metadata.xml', '_blank');
 
-                case 'geojson':
+                        break;
 
-                    downloadGeojson(url, title);
+                    case 'geojson':
 
-                    break;
+                        downloadGeojson(url, title);
 
-                case 'kml':
+                        break;
 
-                    extractData(url, 'KML');
+                    case 'kml':
 
-                    break;
-            }
-        },
-        items: {
-            'view': {
-                name: 'Visualizar',
-                icon: 'fas fa-map-marker-alt'
-            },
-            'open': {
-                name: 'Abrir no',
-                icon: 'fas fa-external-link-alt',
-                items: {
-                    'portal': {
-                        name: 'ArcGIS Portal', 
-                        icon: 'fas fa-globe-americas'
-                    },
-                    'mapViewer': {
-                        name: 'ArcGIS Map Viewer',
-                        icon: 'fas fa-map-marked-alt'
-                    }
+                        extractData(url, 'KML');
+
+                        break;
+
+                    case 'file':
+
+                        window.open(app.portal + '/sharing/rest/content/items/' + id + '/data');
+
+                        break;
                 }
             },
-            'url': {
-                name: 'URL',
-                icon: 'fas fa-link',
-                visible : function() {
+            items: {
+                'view': {
+                    name: 'Visualizar',
+                    icon: 'fas fa-map-marker-alt',
+                    visible : function() {
 
-                    var target = this;
-                    var rowData = table.row(target).data();
-                    var url = rowData[1];
+                        var target = this;
+                        var rowData = table.row(target).data();
+                        var type = rowData[4];
 
-                    if (url) {
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                }
-            },
-            'metadata': {
-                name: 'Metadados',
-                icon: 'far fa-file-alt'
-            },
-            'download': {
-                name: 'Baixar',
-                icon: 'fas fa-cloud-download-alt',
-                items: {
-                    'geojson': {
-                        name: 'GeoJSON',
-                        icon: 'fas fa-globe'
-                    },
-                    'kml': {
-                        name: 'KML',
-                        icon: 'fas fa-globe'
+                        switch(type) {
+                            case 'Feature Service':
+                            case 'Image Service':
+                            case 'Map Service':
+                            case 'WMS':
+                                return true;
+                            default:
+                                return false;
+                        }
                     }
                 },
-                visible : function() { 
+                'open': {
+                    name: 'Abrir no',
+                    icon: 'fas fa-external-link-alt',
+                    items: {
+                        'portal': {
+                            name: 'ArcGIS Portal', 
+                            icon: 'fas fa-globe-americas'
+                        },
+                        'mapViewer': {
+                            name: 'ArcGIS Map Viewer',
+                            icon: 'fas fa-map-marked-alt',
+                            visible : function() {
 
-                    var target = this;
-                    var rowData = table.row(target).data();
-                    var type = rowData[4];
+                                var target = this;
+                                var rowData = table.row(target).data();
+                                var type = rowData[4];
+        
+                                switch(type) {
+                                    case 'Feature Service':
+                                    case 'Image Service':
+                                    case 'Map Service':
+                                    case 'WFS':
+                                    case 'WMS':
+                                    case 'Web Map':   
+                                        return true;
+                                    default:
+                                        return false;
+                                }
+                            }
+                        }
+                    }
+                },
+                'url': {
+                    name: 'URL',
+                    icon: 'fas fa-link',
+                    visible : function() {
 
-                    switch(type) {
-                        case 'Feature Service':
-                        case 'Map Service':
+                        var target = this;
+                        var rowData = table.row(target).data();
+                        var url = rowData[1];
+
+                        if (url) {
                             return true;
-                        default:
+                        }
+                        else {
                             return false;
+                        }
+                    }
+                },
+                'metadata': {
+                    name: 'Metadados',
+                    icon: 'far fa-file-alt'
+                },
+                'download': {
+                    name: 'Baixar',
+                    icon: 'fas fa-cloud-download-alt',
+                    items: {
+                        'geojson': {
+                            name: 'GeoJSON',
+                            icon: 'fas fa-globe',
+                            visible : function() { 
+
+                                var target = this;
+                                var rowData = table.row(target).data();
+                                var type = rowData[4];
+        
+                                switch(type) {
+                                    case 'Feature Service':
+                                    case 'Map Service':
+                                        return true;
+                                    default:
+                                        return false;
+                                }
+                            }
+                        },
+                        'file': {
+                            name: 'Arquivo',
+                            icon: 'far fa-save',
+                            visible : function() { 
+
+                                var target = this;
+                                var rowData = table.row(target).data();
+                                var type = rowData[4];
+        
+                                switch(type) {
+                                    case 'Code Attachment':
+                                    case 'Shapefile':
+                                    case 'Windows Mobile Package':
+                                        return true;
+                                    default:
+                                        return false;
+                                }
+                            }
+                        }
+                    },
+                    visible : function() { 
+
+                        var target = this;
+                        var rowData = table.row(target).data();
+                        var type = rowData[4];
+
+                        switch(type) {
+                            case 'Code Attachment':
+                            case 'Feature Service':
+                            case 'Map Service':
+                            case 'Shapefile':
+                            case 'Windows Mobile Package':
+                                return true;
+                            default:
+                                return false;
+                        }
                     }
                 }
             }
-        }
+        });
     });
 }
 

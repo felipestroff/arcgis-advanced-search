@@ -188,7 +188,7 @@ function searchById(id) {
 
             esriRequest(app.portal + '/sharing/rest/content/groups/' + id, options).then(function (response) {
 
-                $('#menu').show();
+                $('.navbar-nav').show();
 
                 var total = response.data.total;
                 var columns = [
@@ -329,7 +329,7 @@ function searchByName(name) {
                             document.getElementById('group').innerHTML = 'ArcGIS REST API - ' + group.title;
                             document.getElementById('user').innerHTML = 'Anônimo';
         
-                            $('#menu').show();
+                            $('.navbar-nav').show();
         
                             var total = result.data.total;
                             var columns = [

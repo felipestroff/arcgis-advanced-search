@@ -1,5 +1,6 @@
 // Global app variables
 var app = {
+    type: null,
     filter: null,
     url: null,
     portal: null,
@@ -93,11 +94,17 @@ function search(e) {
 
     if (app.url !== null) {
 
-        if (app.filter === 'id') {
-            searchById(query.value);
+        if (app.type === 'groups') {
+
+            if (app.filter === 'id') {
+                searchGroupById(query.value);
+            }
+            else {
+                searchGroupByName(query.value);
+            }
         }
         else {
-            searchByName(query.value);
+            searchContent(query.value);
         }
     }
 }
@@ -123,7 +130,25 @@ function verifyInput() {
     }
 }
 
-function filter(el) {
+function setSearchType(type) {
+
+    app.type = type.value;
+
+    if (type.value === 'groups') {
+
+        document.getElementById('groupID').setAttribute('required', true);
+
+        $('#filters').show();
+    }
+    else {
+
+        document.getElementById('groupID').removeAttribute('required');
+
+        $('#filters').hide();
+    }
+}
+
+function setSearchFilter(el) {
 
     app.filter = el.value;
 
@@ -135,7 +160,7 @@ function filter(el) {
     }
 }
 
-function searchById(id) {
+function searchGroupById(id) {
 
     require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
 
@@ -230,6 +255,7 @@ function searchById(id) {
                     var rows = [];
                     var downloadRows = [];
                     var thumbnail;
+                    var perfil = '<a href="' + app.portal + '/home/user.html?user=' + service.owner + '" target="_blank">' + service.owner + '</a>';
 
                     if (service.thumbnail) {
                         thumbnail = '<img src="' + app.portal + '/sharing/rest/content/items/' + service.id + '/info/' + service.thumbnail + '?token=' + app.token + '" class="img-thumbnail img-item">';
@@ -243,7 +269,7 @@ function searchById(id) {
                     rows.push(thumbnail);
                     rows.push(service.title);
                     rows.push(service.type);
-                    rows.push(service.owner);
+                    rows.push(perfil);
 
                     data.push(rows);
 
@@ -288,7 +314,7 @@ function searchById(id) {
     });
 }
 
-function searchByName(name) {
+function searchGroupByName(name) {
 
     require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
 
@@ -334,7 +360,7 @@ function searchByName(name) {
                     $('#groupModal .modal-body').append(
                         '<div class="custom-control custom-radio custom-control-inline">' +
                             '<input class="custom-control-input" type="radio" name="groupSelect" id="groupSelect_' + i + '" value="' + group.id + '">' +
-                            '<label class="custom-control-label" for="groupSelect_' + i + '">' + group.title + ' (' + group.owner + ')</label>' + 
+                            '<label class="custom-control-label" for="groupSelect_' + i + '">' + group.title + ' (<a href="' + app.portal + '/home/user.html?user=' + group.owner + '" target="_blank">' + group.owner + '</a>)</label>' + 
                         '</div>'
                     );
 
@@ -455,6 +481,138 @@ function searchByName(name) {
                 $('.loader').hide();
 
             }, 500);
+        });
+    });
+}
+
+function searchContent(query) {
+
+    require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
+
+        var server = app.url.replace(/^https?\:\/\//i, '');
+        var groupContent = document.getElementById('group');
+        var userContent = document.getElementById('user');
+
+        esriConfig.request.trustedServers.push(server);
+        esriConfig.portalUrl = app.portal;
+
+        groupContent.innerHTML = query + ' (' + app.portal + ')';
+        groupContent.href = app.portal;
+        groupContent.target = '_blank';
+
+        userContent.innerHTML = 'Anônimo';
+
+        $('#modal').modal('hide');
+        $('.loader').show();
+
+        var options = {
+            query: {
+                f: 'json',
+                q: query
+            }
+        };
+
+        esriRequest(app.portal + '/sharing/rest/search', options).then(function (response) {
+
+            $('.navbar-nav').show();
+
+            var total = response.data.total;
+            var columns = [
+                {
+                    title: 'ID'
+                },
+                {
+                    title: 'URL'
+                },
+                {
+                    title: '',
+                },
+                {
+                    title: 'Nome'
+                },
+                {
+                    title: 'Tipo'
+                },
+                {
+                    title: 'Proprietário(a)'
+                }
+            ];
+            var data = [];
+            var downloadData = [];
+            var itens = response.data.results;
+
+            if (itens.length) {
+
+                toastr.clear();
+
+                itens.forEach(function(item) {
+
+                    console.log(item);
+
+                    var rows = [];
+                    var downloadRows = [];
+                    var thumbnail;
+                    var description = 
+                        '<div>' +
+                            '<p>' + item.title + '</p>' +
+                            '<small class="text-muted">' + item.description + '</small>' +
+                        '</div>';
+                    var perfil = '<a href="' + app.portal + '/home/user.html?user=' + item.owner + '" target="_blank">' + item.owner + '</a>';
+
+                    if (item.thumbnail) {
+                        thumbnail = '<img src="' + app.portal + '/sharing/rest/content/items/' + item.id + '/info/' + item.thumbnail + '" class="img-thumbnail img-item">';
+                    }
+                    else {
+                        thumbnail = '<img src="images/default_thumb.png" class="img-thumbnail img-item">';
+                    }
+
+                    rows.push(item.id);
+                    rows.push(item.url);
+                    rows.push(thumbnail);
+                    rows.push(description);
+                    rows.push(item.type);
+                    rows.push(perfil);
+
+                    data.push(rows);
+
+                    downloadRows.push(item.title);
+                    downloadData.push(downloadRows);
+                });
+
+                var table = createDataTable(columns, data);
+        
+                createContextMenu(table);
+
+                $('#download').on('click', function () {
+
+                    var csvContent = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURI(downloadData.map(e => e.join(';')).join('\n'));
+                    var link = document.createElement('a');
+
+                    link.setAttribute('href', csvContent);
+                    link.setAttribute('download', name + '.csv');
+                    document.body.appendChild(link);
+
+                    link.click();
+                });
+
+                $('.loader').hide();
+
+                toastr.success('', total + ' itens encontrados');
+            }
+            else {
+
+                setTimeout(function() { 
+
+                    toastr.clear();
+                    toastr.info('', 'Nenhum resultado obtido');
+    
+                    $('#modal').modal('show');
+                    $('.loader').hide();
+    
+                }, 500);
+            }
+        }).catch((e) => {
+            logError(e);
         });
     });
 }

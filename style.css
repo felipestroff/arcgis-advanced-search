@@ -119,3 +119,16 @@
     display: none;
     margin-top: 10px;
 }
+
+fieldset {
+    border: 1px solid #dee2e6;
+    padding: 5px;
+}
+
+fieldset legend {
+    width: auto;
+}
+
+#filters {
+    display: none;
+}

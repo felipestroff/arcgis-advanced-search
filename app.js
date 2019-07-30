@@ -6,7 +6,9 @@ var app = {
     map: null,
     view: null,
     legend: null,
-    token: null
+    token: null,
+    username: null,
+    password: null
 };
 
 $(document).ready(function() {
@@ -139,9 +141,9 @@ function searchById(id) {
 
     require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
 
-        var trustedHost = app.url.replace(/^https?\:\/\//i, '');
+        var server = app.url.replace(/^https?\:\/\//i, '');
 
-        esriConfig.request.trustedServers.push(trustedHost);
+        esriConfig.request.trustedServers.push(server);
         esriConfig.portalUrl = app.portal;
 
         $('#modal').modal('hide');
@@ -277,9 +279,9 @@ function searchByName(name) {
 
     require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
 
-        var trustedHost = app.url.replace(/^https?\:\/\//i, '');
+        var server = app.url.replace(/^https?\:\/\//i, '');
 
-        esriConfig.request.trustedServers.push(trustedHost);
+        esriConfig.request.trustedServers.push(server);
         esriConfig.portalUrl = app.portal;
 
         $('#modal').modal('hide');
@@ -448,6 +450,8 @@ function generateToken(username, password) {
         esriRequest(app.portal + '/sharing/rest/generateToken', options).then(function(response) {
 
             app.token = response.data.token;
+            app.username = username;
+            app.password = password;
 
             console.info('[TOKEN]:', app.token);
         })
@@ -468,19 +472,15 @@ function extractData(layerUrl, format) {
                 url: layerUrl + '/0'
             }
         ];
-        var options = {
-            responseType: 'json'
-        };
         var url = app.url + '/server/rest/services/System/SpatialAnalysisTools/GPServer/ExtractData';
 
         data.append('inputLayers', JSON.stringify(inputLayers));
         data.append('dataFormat', format);
-        data.append('f', 'pjson');
+        data.append('f', 'json');
 
         var geoprocessor = new Geoprocessor({
             url: url,
             requestOptions: {
-                responseType: 'json',
                 body: data
             }
         });
@@ -491,13 +491,26 @@ function extractData(layerUrl, format) {
             extendedTimeOut: 0
         });
 
+        console.log('url:', url);
+        console.log('inputLayers:', JSON.stringify(inputLayers));
+        console.log('dataFormat:', format);
+        console.log('f:', 'json');
+
         geoprocessor.submitJob().then(function(result) {
+
+            var options = {
+                query: {
+                    f: 'json'
+                }
+            };
+
+            console.log('Job result:', result);
 
             if (result.jobStatus === 'job-succeeded') {
                     
-                esriRequest(url + '/jobs/' + result.jobId + '/results/contentID?f=json', options).then(function(response) {
+                esriRequest(url + '/jobs/' + result.jobId + '/results/contentID', options).then(function(response) {
 
-                    // TODO
+                    console.log('Job succeeded:', response);
                 });
             }
             else {
@@ -505,6 +518,8 @@ function extractData(layerUrl, format) {
                 toastr.clear();
 
                 result.messages.forEach(function(msg) {
+
+                    console.error('Job failed:', msg);
 
                     if (msg.type === 'informative') {
 
@@ -540,12 +555,15 @@ function downloadGeojson(url, title) {
 
     require(['esri/request'], function(esriRequest) {
 
+        var data = new FormData();
+
+        data.append('where', '1=1');
+        data.append('outFields', '*');
+        data.append('f', 'geojson');
+
         var options = {
-            query: {
-                where: '1=1',
-                f: 'geojson'
-            },
-            responseType: 'json'
+            body: data,
+            authMode: 'no-prompt'
         };
 
         esriRequest(url + '/0/query', options).then(function(response) {
@@ -654,6 +672,12 @@ function createContextMenu(table) {
                     downloadGeojson(url, title);
 
                     break;
+
+                case 'kml':
+
+                    extractData(url, 'KML');
+
+                    break;
             }
         },
         items: {
@@ -671,17 +695,7 @@ function createContextMenu(table) {
                     },
                     'mapViewer': {
                         name: 'ArcGIS Map Viewer',
-                        icon: 'fas fa-map-marked-alt',
-                        disabled: function() { 
-
-                            var target = this;
-                            var rowData = table.row(target).data();
-                            var type = rowData[4];
-
-                            if (type === 'AppBuilder Extension') {
-                                return true;
-                            }
-                        }
+                        icon: 'fas fa-map-marked-alt'
                     },
                     'rest': {
                         name: 'ArcGIS REST',
@@ -700,18 +714,24 @@ function createContextMenu(table) {
                     'geojson': {
                         name: 'GeoJSON',
                         icon: 'fas fa-globe'
+                    },
+                    'kml': {
+                        name: 'KML',
+                        icon: 'fas fa-globe'
                     }
                 },
-                disabled: function() { 
+                visible : function() { 
 
                     var target = this;
                     var rowData = table.row(target).data();
                     var type = rowData[4];
 
-                    if (type === 'AppBuilder Extension' ||
-                        type === 'Image Service' ||
-                        type === 'WMS') {
-                        return true;
+                    switch(type) {
+                        case 'Feature Service':
+                        case 'Map Service':
+                            return true;
+                        default:
+                            return false;
                     }
                 }
             }

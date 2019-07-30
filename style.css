@@ -103,6 +103,7 @@
     padding-top: 4rem;
 }
 
-#alerts {
+#modal .alert {
+    display: none;
     margin-top: 10px;
 }

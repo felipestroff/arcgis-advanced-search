@@ -16,7 +16,7 @@ $(document).ready(function() {
         backdrop: 'static', 
         keyboard: false
     });
-
+    // Update then to responsive
     $('#modal').modal('handleUpdate');
     $('#groupModal').modal('handleUpdate');
     $('#previewModal').modal('handleUpdate');
@@ -65,10 +65,8 @@ require(['esri/Map', 'esri/views/MapView', 'esri/widgets/Home'], function(Map, M
 
 function search(e) {
 
-    // Prevent page to reload on submit
     e.preventDefault();
 
-    // Get params
     var urlSelect = document.getElementById('urlSelect');
     var urlInput = document.getElementById('urlInput');
     var query = document.getElementById('query');
@@ -127,22 +125,13 @@ function verifyInput() {
 
 function filter(el) {
 
-    var alerts = document.getElementById('alerts');
-
     app.filter = el.value;
 
     if (el.value === 'name') {
-
-        var info = document.createElement('div');
-
-        info.classList.add('alert', 'alert-info');
-        info.innerHTML = 'Busca por <b>Nome</b> funcionará somente em <b>grupos públicos</b>.';
-
-        alerts.appendChild(info);
+        $('#modal .alert').show();
     }
     else {
-
-        alerts.innerHTML = '';
+        $('#modal .alert').hide();
     }
 }
 
@@ -155,7 +144,6 @@ function searchById(id) {
         esriConfig.request.trustedServers.push(trustedHost);
         esriConfig.portalUrl = app.portal;
 
-        // Hide modal and show loading
         $('#modal').modal('hide');
         $('.loader').show();
 
@@ -248,15 +236,12 @@ function searchById(id) {
                     downloadData.push(downloadRows);
                 });
 
-                // Init jQuery DataTable
                 var table = createDataTable(columns, data);
 
-                // Init jQuery contextMenu
                 createContextMenu(table);
 
                 $('#download').on('click', function () {
 
-                    // Create a CSV file with table data
                     var csvContent = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURI(downloadData.map(e => e.join(';')).join('\n'));
                     var link = document.createElement('a');
 
@@ -267,10 +252,8 @@ function searchById(id) {
                     link.click();
                 });
 
-                // Hide loading
                 $('.loader').hide();
 
-                // Show success alert
                 toastr.success('', total + ' itens encontrados');
 
             }).catch((e) => {
@@ -299,7 +282,6 @@ function searchByName(name) {
         esriConfig.request.trustedServers.push(trustedHost);
         esriConfig.portalUrl = app.portal;
 
-        // Hide modal and show loading
         $('#modal').modal('hide');
         $('.loader').show();
 
@@ -395,15 +377,12 @@ function searchByName(name) {
                                 downloadData.push(downloadRows);
                             });
         
-                            // Init jQuery DataTable
                             var table = createDataTable(columns, data);
         
-                            // Init jQuery contextMenu
                             createContextMenu(table);
         
                             $('#download').on('click', function () {
         
-                                // Create a CSV file with table data
                                 var csvContent = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURI(downloadData.map(e => e.join(';')).join('\n'));
                                 var link = document.createElement('a');
         
@@ -414,10 +393,8 @@ function searchByName(name) {
                                 link.click();
                             });
         
-                            // Hide loading
                             $('.loader').hide();
         
-                            // Show success alert
                             toastr.success('', total + ' itens encontrados');
         
                         }).catch((e) => {

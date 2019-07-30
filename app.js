@@ -6,9 +6,7 @@ var app = {
     map: null,
     view: null,
     legend: null,
-    token: null,
-    username: null,
-    password: null
+    token: null
 };
 
 $(document).ready(function() {
@@ -142,6 +140,9 @@ function searchById(id) {
     require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
 
         var server = app.url.replace(/^https?\:\/\//i, '');
+        var navContent = document.getElementById('navigation');
+        var groupContent = document.getElementById('group');
+        var userContent = document.getElementById('user');
 
         esriConfig.request.trustedServers.push(server);
         esriConfig.portalUrl = app.portal;
@@ -157,7 +158,6 @@ function searchById(id) {
 
         esriRequest(app.portal + '/sharing/rest/community/groups/' + id, options).then(function (group) {
 
-            var title = group.data.title;
             var username = group.data.userMembership ? group.data.userMembership.username : '';
 
             if (username !== '') {
@@ -179,14 +179,15 @@ function searchById(id) {
 
                 generateToken(username, password);
 
-                document.getElementById('user').innerHTML = username;
+                userContent.innerHTML = username;
             }
             else {
-
-                document.getElementById('user').innerHTML = 'Anônimo';
+                userContent.innerHTML = 'Anônimo';
             }
 
-            document.getElementById('group').innerHTML = 'ArcGIS REST API - ' + title;
+            groupContent.innerHTML = group.data.title + ' (' + app.portal + ')';
+            groupContent.href = app.portal;
+            groupContent.target = '_blank';
 
             esriRequest(app.portal + '/sharing/rest/content/groups/' + id, options).then(function (response) {
 
@@ -212,6 +213,14 @@ function searchById(id) {
                 ];
                 var data = [];
                 var downloadData = [];
+
+                if (group.data.thumbnail) {
+
+                    var icon = app.portal + '/sharing/rest/community/groups/' + group.data.id + '/info/' + group.data.thumbnail + '?token=' + app.token;
+                    
+                    navContent.style.backgroundImage = 'url(' + icon + ')';
+                    groupContent.style.paddingLeft = '50px';
+                }
 
                 response.data.items.forEach(function(service) {
 
@@ -280,6 +289,9 @@ function searchByName(name) {
     require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
 
         var server = app.url.replace(/^https?\:\/\//i, '');
+        var navContent = document.getElementById('navigation');
+        var groupContent = document.getElementById('group');
+        var userContent = document.getElementById('user');
 
         esriConfig.request.trustedServers.push(server);
         esriConfig.portalUrl = app.portal;
@@ -318,7 +330,7 @@ function searchByName(name) {
                     $('#groupModal .modal-body').append(
                         '<div class="custom-control custom-radio custom-control-inline">' +
                             '<input class="custom-control-input" type="radio" name="groupSelect" id="groupSelect_' + i + '" value="' + group.id + '">' +
-                            '<label class="custom-control-label" for="groupSelect_' + i + '">' + group.title + '</label>' + 
+                            '<label class="custom-control-label" for="groupSelect_' + i + '">' + group.title + ' (' + group.owner + ')</label>' + 
                         '</div>'
                     );
 
@@ -328,8 +340,15 @@ function searchByName(name) {
 
                         esriRequest(app.portal + '/sharing/rest/content/groups/' + group.id, options).then(function (result) {
 
-                            document.getElementById('group').innerHTML = 'ArcGIS REST API - ' + group.title;
-                            document.getElementById('user').innerHTML = 'Anônimo';
+                            if (group.thumbnail) {   
+                                navContent.style.backgroundImage = 'url(' + app.portal + '/sharing/rest/community/groups/' + group.id + '/info/' + group.thumbnail + ')';
+                                groupContent.style.paddingLeft = '50px';
+                            }
+
+                            groupContent.innerHTML = group.title + ' (' + app.portal + ')';
+                            groupContent.href = app.portal;
+                            groupContent.target = '_blank';
+                            userContent.innerHTML = 'Anônimo';
         
                             $('.navbar-nav').show();
         
@@ -354,14 +373,14 @@ function searchByName(name) {
                             var data = [];
                             var downloadData = [];
         
-                            result.data.items.forEach(function(service) {
+                            result.data.items.forEach(function(service, index) {
 
                                 var rows = [];
                                 var downloadRows = [];
                                 var thumbnail;
         
                                 if (service.thumbnail) {
-                                    thumbnail = '<img src="' + app.portal + '/sharing/rest/content/items/' + service.id + '/info/' + service.thumbnail + '" class="img-thumbnail img-item">';
+                                    thumbnail = '<img id="thumbnail_' + index + '" src="' + app.portal + '/sharing/rest/content/items/' + service.id + '/info/' + service.thumbnail + '" class="img-thumbnail img-item">';
                                 }
                                 else {
                                     thumbnail = '<img src="images/default_thumb.png" class="img-thumbnail img-item">';
@@ -450,8 +469,6 @@ function generateToken(username, password) {
         esriRequest(app.portal + '/sharing/rest/generateToken', options).then(function(response) {
 
             app.token = response.data.token;
-            app.username = username;
-            app.password = password;
 
             console.info('[TOKEN]:', app.token);
         })
@@ -655,7 +672,7 @@ function createContextMenu(table) {
 
                     break;
 
-                case 'rest':
+                case 'url':
 
                     window.open(url, '_blank');
         
@@ -687,7 +704,7 @@ function createContextMenu(table) {
             },
             'open': {
                 name: 'Abrir no',
-                icon: 'fas fa-link',
+                icon: 'fas fa-external-link-alt',
                 items: {
                     'portal': {
                         name: 'ArcGIS Portal', 
@@ -696,10 +713,23 @@ function createContextMenu(table) {
                     'mapViewer': {
                         name: 'ArcGIS Map Viewer',
                         icon: 'fas fa-map-marked-alt'
-                    },
-                    'rest': {
-                        name: 'ArcGIS REST',
-                        icon: 'fas fa-external-link-alt'
+                    }
+                }
+            },
+            'url': {
+                name: 'URL',
+                icon: 'fas fa-link',
+                visible : function() {
+
+                    var target = this;
+                    var rowData = table.row(target).data();
+                    var url = rowData[1];
+
+                    if (url) {
+                        return true;
+                    }
+                    else {
+                        return false;
                     }
                 }
             },

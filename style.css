@@ -3,6 +3,13 @@
     padding-bottom: 13px;
 }
 
+#navigation {
+    background-repeat: no-repeat;
+    background-position-x: 3px;
+    background-position-y: 3px;
+    background-size: 50px;
+}
+
 #table {
     width: 100% !important;
 }
@@ -10,6 +17,11 @@
 .img-item {
     max-width: 150px; 
     height: auto;
+}
+
+.img-group {
+    width: 65px;
+    height: 65px;
 }
 
 #viewDiv {

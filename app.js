@@ -202,30 +202,13 @@ function searchGroupById(id) {
                     toastr.success('', itens.length + ' itens encontrados');
                 }
                 else {
-    
-                    setTimeout(function() { 
-    
-                        toastr.clear();
-                        toastr.info('', 'Nenhum resultado obtido');
-        
-                        $('#modal').modal('show');
-                        $('#loader').hide();
-        
-                    }, 500);
+                    logInfo('Nenhum resultado obtido', true);
                 }
             }).catch((e) => {
                 logError(e);
             });
-        }).catch((e) => {
-                
-            setTimeout(function() { 
-
-                logError(e);
-
-                $('#modal').modal('show');
-                $('#loader').hide();
-
-            }, 500);
+        }).catch((e) => {   
+            logError(e, true);
         });
     });
 }
@@ -313,16 +296,7 @@ function searchGroupByName(name) {
                                 toastr.success('', itens.length + ' itens encontrados');
                             }
                             else {
-
-                                setTimeout(function() { 
-                
-                                    toastr.clear();
-                                    toastr.info('', 'Nenhum resultado obtido');
-                    
-                                    $('#modal').modal('show');
-                                    $('#loader').hide();
-                    
-                                }, 500);
+                                logInfo('Nenhum resultado obtido', true);
                             }
                         }).catch((e) => {
                             logError(e);
@@ -331,27 +305,10 @@ function searchGroupByName(name) {
                 });
             }
             else {
-
-                setTimeout(function() { 
-
-                    toastr.clear();
-                    toastr.info('', 'Nenhum resultado obtido');
-    
-                    $('#modal').modal('show');
-                    $('#loader').hide();
-    
-                }, 500);
+                logInfo('Nenhum resultado obtido', true);
             }
-        }).catch((e) => {
-                
-            setTimeout(function() { 
-
-                logError(e);
-
-                $('#modal').modal('show');
-                $('#loader').hide();
-
-            }, 500);
+        }).catch((e) => {    
+            logError(e, true);
         });
     });
 }
@@ -405,19 +362,10 @@ function searchContent(query) {
                 toastr.success('', itens.length + ' itens encontrados');
             }
             else {
-
-                setTimeout(function() { 
-
-                    toastr.clear();
-                    toastr.info('', 'Nenhum resultado obtido');
-    
-                    $('#modal').modal('show');
-                    $('#loader').hide();
-    
-                }, 500);
+                logInfo('Nenhum resultado obtido', true);
             }
         }).catch((e) => {
-            logError(e);
+            logError(e, true);
         });
     });
 }
@@ -910,7 +858,24 @@ function extractData(layerUrl, format) {
     });
 }
 
-function logError(e) {
+function logInfo(msg, back) {
+
+    $('#loader').hide();
+
+    toastr.clear();
+    toastr.info('', msg);
+
+    if (back) {
+
+        setTimeout(function() { 
+
+            $('#modal').modal('show');
+
+        }, 500);
+    }
+}
+
+function logError(e, back) {
 
     console.error(e);
 
@@ -918,4 +883,13 @@ function logError(e) {
 
     toastr.clear();
     toastr.error(e.message, e.name);
+
+    if (back) {
+
+        setTimeout(function() { 
+
+            $('#modal').modal('show');
+
+        }, 500);
+    }
 }

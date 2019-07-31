@@ -76,6 +76,7 @@ function preview(id) {
                         createLayerPopup(layer);
                     }
 
+                    // TODO
                     app.view.goTo(layer.fullExtent);
 
                     $('#loader').hide();

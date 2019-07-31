@@ -138,7 +138,7 @@ function searchGroupById(id) {
 
         var options = {
             query: {
-                f: 'json'
+                f: 'pjson'
             }
         };
 
@@ -231,13 +231,11 @@ function searchGroupById(id) {
 
                     if (service.description) {
                         description = 
-                        '<div class="item-info">' +
-                            '<p>' + service.title + '</p>' +
-                            '<small class="text-muted">' + reduceDescription(service.description, 100) + '</small>' +
-                        '</div>';
+                        '<p>' + service.title + '</p>' +
+                        '<small class="text-muted">' + reduceDescription(service.description, 100) + '</small>';
                     }
                     else {
-                        description = '';
+                        description = service.title;
                     }
 
                     rows.push(service.id);
@@ -308,7 +306,7 @@ function searchGroupByName(name) {
 
         var options = {
             query: {
-                f: 'json',
+                f: 'pjson',
                 q: name,
             }
         };
@@ -403,13 +401,11 @@ function searchGroupByName(name) {
 
                                 if (service.description) {
                                     description = 
-                                    '<div class="item-info">' +
-                                        '<p>' + service.title + '</p>' +
-                                        '<small class="text-muted">' + reduceDescription(service.description, 100) + '</small>' +
-                                    '</div>';
+                                    '<p>' + service.title + '</p>' +
+                                    '<small class="text-muted">' + reduceDescription(service.description, 100) + '</small>';
                                 }
                                 else {
-                                    description = '';
+                                    description = service.title;
                                 }
 
                                 rows.push(service.id);
@@ -500,7 +496,7 @@ function searchContent(query) {
 
         var options = {
             query: {
-                f: 'json',
+                f: 'pjson',
                 q: query,
                 sortField: 'modified',
                 sortOrder: 'desc',
@@ -560,13 +556,11 @@ function searchContent(query) {
 
                     if (item.description) {
                         description = 
-                        '<div class="item-info">' +
-                            '<p>' + item.title + '</p>' +
-                            '<small class="text-muted">' + reduceDescription(item.description, 100) + '</small>' +
-                        '</div>';
+                        '<p>' + item.title + '</p>' +
+                        '<small class="text-muted">' + reduceDescription(item.description, 100) + '</small>';
                     }
                     else {
-                        description = '';
+                        description = item.title;
                     }
 
                     rows.push(item.id);
@@ -830,6 +824,8 @@ function createContextMenu(table) {
                 var title = rowData[1];
                 var url = rowData[2];
 
+                console.log(rowData);
+
                 switch (key) {
                     case 'view':
 
@@ -846,6 +842,12 @@ function createContextMenu(table) {
                     case 'mapViewer':
 
                         window.open(app.portal + '/home/webmap/viewer.html?useExisting=1&layers=' + id, '_blank');
+
+                        break;
+
+                    case 'sceneViewer':
+
+                        window.open(app.portal + '/home/webscene/viewer.html?webscene=' + id, '_blank');
 
                         break;
 
@@ -927,6 +929,23 @@ function createContextMenu(table) {
                                     case 'WFS':
                                     case 'WMS':
                                     case 'Web Map':   
+                                        return true;
+                                    default:
+                                        return false;
+                                }
+                            }
+                        },
+                        'sceneViewer': {
+                            name: 'ArcGIS Scene Viewer',
+                            icon: 'fas fa-layer-group',
+                            visible : function() {
+
+                                var target = this;
+                                var rowData = table.row(target).data();
+                                var type = rowData[5];
+        
+                                switch(type) {
+                                    case 'Web Scene':   
                                         return true;
                                     default:
                                         return false;

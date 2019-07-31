@@ -4,17 +4,18 @@
         <meta charset="UTF-8">
         <title>ArcGIS Portal Search</title>
         <!-- Styles -->
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="styles/bootstrap.css">
+        <link rel="stylesheet" href="styles/fontawesome.css">
+        <link rel="stylesheet" href="styles/datatables.css">
+        <link rel="stylesheet" href="styles/contextMenu.css">
+        <link rel="stylesheet" href="styles/toastr.css">
+        <link rel="stylesheet" href="styles/app.css">
         <link rel="stylesheet" href="https://js.arcgis.com/4.12/esri/themes/light/main.css">
-        <link rel="stylesheet" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
-        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-        <link rel="stylesheet" href="style.css">
     </head>
     <body>
 
         <!-- Loading -->
-        <div class="loader padding-leader-3 padding-trailer-3">
+        <div id="loader" class="padding-leader-3 padding-trailer-3">
             <div class="loader-bars"></div>
             <div class="loader-text">Carregando...</div>
         </div>
@@ -32,7 +33,7 @@
                     <li class="nav-item dropdown active">
                         <a id="user" class="nav-link dropdown-toggle" href="#" id="dropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
                         <div class="dropdown-menu" aria-labelledby="dropdown">
-                            <a id="download" class="dropdown-item" href="#">
+                            <a class="dropdown-item" href="#" onclick="downloadCSV();">
                                 <i class="fas fa-file-download"></i> Baixar lista de itens
                             </a>
                             <a class="dropdown-item" href="">
@@ -42,13 +43,13 @@
                     </li>
                 </ul>
                 <span class="navbar-text">
-                    v0.2
+                    v0.3
                 </span>
             </div>
         </nav>
 
         <main role="main" class="container-fluid">
-            <div class="starter-template">
+            <div class="template">
                 
                 <!-- Data Table -->
                 <div class="table-responsive">
@@ -59,7 +60,7 @@
                 <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
-                            <form onsubmit="search(event); verifyInput();">
+                            <form onsubmit="search(event);">
                                 <div class="modal-header">
                                     <h5 class="modal-title">ArcGIS REST API</h5>
                                 </div>
@@ -67,20 +68,18 @@
                                     <div class="form-group text-center">
                                         <fieldset>
                                             <legend class="text-center">Local</legend>
-                                            <select id="urlSelect" class="form-control form-control-lg" onchange="verifyInput()">
-                                                <option value="">Selecionar...</option>
+                                            <input id="urlInput" list="urlSelect" placeholder="Selecione ou digite uma URL válida" class="form-control form-control-lg" required>
+                                            <datalist id="urlSelect">
                                                 <option value="https://arcgis.com">https://arcgis.com</option>
                                                 <option value="https://codexremote.maps.arcgis.com">https://codexremote.maps.arcgis.com</option>
                                                 <option value="https://gisserver.codex.local/portal">https://gisserver.codex.local/portal</option>
                                                 <option value="https://iede.hml.rs.gov.br/portal">https://iede.hml.rs.gov.br/portal</option>
                                                 <option value="https://iede.rs.gov.br/portal">https://iede.rs.gov.br/portal</option>
                                                 <option value="https://zee.rs.gov.br/portal">https://zee.rs.gov.br/portal</option>
-                                            </select>
-                                            <small>Ou</small>
-                                            <input id="urlInput" type="url" placeholder="Inserir URL" class="form-control form-control-lg">
+                                            </datalist>
                                         </fieldset>
                                     </div>
-                                    <div class="form-group">
+                                    <div id="types" class="form-group">
                                         <fieldset>
                                             <legend class="text-center">Tipo</legend>
                                             <div class="custom-control custom-radio custom-control-inline">
@@ -94,6 +93,9 @@
                                                 <label class="custom-control-label" for="content">
                                                     Conteúdo
                                                 </label>
+                                            </div>
+                                            <div class="alert alert-info">
+                                                Máximo de 100 itens pode ser pesquisado
                                             </div>
                                         </fieldset>
                                     </div>
@@ -116,12 +118,12 @@
                                                 </label>
                                             </div>
                                             <div class="alert alert-info">
-                                                Busca por <b>Nome</b> funcionará somente em conteúdos <strong>públicos</strong>
+                                                Busca por nome funcionará somente em conteúdos públicos
                                             </div>
                                         </fieldset>
                                     </div>
                                     <div class="form-group">
-                                        <input id="query" class="form-control form-control-lg" type="text" placeholder="Pesquisar..." required>
+                                        <input id="query" class="form-control form-control-lg" type="text" placeholder="Pesquisar por..." required>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -164,15 +166,14 @@
         </main>
 
         <!-- Scripts -->
-        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-        <script src="https://cdn.datatables.net/v/bs4/dt-1.10.18/datatables.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-        <script src="https://kit.fontawesome.com/2b2b74cc8f.js"></script>
-        <script src="https://js.arcgis.com/4.12/"></script>
+        <script src="lib/jquery.js"></script>
+        <script src="lib/popper.js"></script>
+        <script src="lib/bootstrap.js"></script>
+        <script src="lib/datatables.js"></script>
+        <script src="lib/contextMenu.js"></script>
+        <script src="lib/jquery.ui.position.js"></script>
+        <script src="lib/toastr.js"></script>
+        <script src="lib/api.js"></script>
         <script src="app.js"></script>
         <script src="map.js"></script>
     </body>

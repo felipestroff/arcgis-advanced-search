@@ -1,4 +1,4 @@
-.starter-template {
+.template {
     padding-top: 71px;
     padding-bottom: 13px;
 }
@@ -32,7 +32,7 @@
 }
 
 /* Esri Style */
-.loader {
+#loader {
     display: none;
     position: fixed;
     top: calc(50% - 100px);

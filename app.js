@@ -236,6 +236,9 @@ function searchGroupById(id) {
                             '<small class="text-muted">' + reduceDescription(service.description, 100) + '</small>' +
                         '</div>';
                     }
+                    else {
+                        description = '';
+                    }
 
                     rows.push(service.id);
                     rows.push(service.title);
@@ -405,6 +408,9 @@ function searchGroupByName(name) {
                                         '<small class="text-muted">' + reduceDescription(service.description, 100) + '</small>' +
                                     '</div>';
                                 }
+                                else {
+                                    description = '';
+                                }
 
                                 rows.push(service.id);
                                 rows.push(service.title);
@@ -495,7 +501,10 @@ function searchContent(query) {
         var options = {
             query: {
                 f: 'json',
-                q: query
+                q: query,
+                sortField: 'modified',
+                sortOrder: 'desc',
+                num: 100
             }
         };
 
@@ -555,6 +564,9 @@ function searchContent(query) {
                             '<p>' + item.title + '</p>' +
                             '<small class="text-muted">' + reduceDescription(item.description, 100) + '</small>' +
                         '</div>';
+                    }
+                    else {
+                        description = '';
                     }
 
                     rows.push(item.id);
@@ -793,7 +805,7 @@ function createDataTable(columns, data) {
                 'orderable': false
             },
             {
-                'targets': [5, 6],
+                'targets': [3, 5, 6],
                 'className': 'text-center'
             }
         ],
@@ -879,6 +891,7 @@ function createContextMenu(table) {
                         var type = rowData[5];
 
                         switch(type) {
+                            case 'Feature Collection':
                             case 'Feature Service':
                             case 'Image Service':
                             case 'Map Service':
@@ -907,6 +920,7 @@ function createContextMenu(table) {
                                 var type = rowData[5];
         
                                 switch(type) {
+                                    case 'Feature Collection':
                                     case 'Feature Service':
                                     case 'Image Service':
                                     case 'Map Service':

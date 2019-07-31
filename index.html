@@ -2,7 +2,7 @@
 <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
-        <title>ArcGIS REST API</title>
+        <title>ArcGIS Portal Search</title>
         <!-- Styles -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://js.arcgis.com/4.12/esri/themes/light/main.css">
@@ -22,7 +22,7 @@
         <!-- Navbar -->
         <nav id="navigation" class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
             <a id="group" class="navbar-brand" href="#">
-                ArcGIS REST API
+                ArcGIS Portal Search
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#menu" aria-controls="menu" aria-expanded="false" aria-label="Menu">
                 <span class="navbar-toggler-icon"></span>
@@ -42,7 +42,7 @@
                     </li>
                 </ul>
                 <span class="navbar-text">
-                    v0.1
+                    v0.2
                 </span>
             </div>
         </nav>
@@ -69,9 +69,12 @@
                                             <legend class="text-center">Local</legend>
                                             <select id="urlSelect" class="form-control form-control-lg" onchange="verifyInput()">
                                                 <option value="">Selecionar...</option>
-                                                <option value="https://iede.hml.rs.gov.br/portal">https://iede.hml.rs.gov.br/portal (Homologação)</option>
-                                                <option value="https://iede.rs.gov.br/portal">https://iede.rs.gov.br/portal (Produção)</option>
-                                                <option value="https://zee.rs.gov.br/portal">https://zee.rs.gov.br/portal (Produção)</option>
+                                                <option value="https://arcgis.com">https://arcgis.com</option>
+                                                <option value="https://codexremote.maps.arcgis.com">https://codexremote.maps.arcgis.com</option>
+                                                <option value="https://gisserver.codex.local/portal">https://gisserver.codex.local/portal</option>
+                                                <option value="https://iede.hml.rs.gov.br/portal">https://iede.hml.rs.gov.br/portal</option>
+                                                <option value="https://iede.rs.gov.br/portal">https://iede.rs.gov.br/portal</option>
+                                                <option value="https://zee.rs.gov.br/portal">https://zee.rs.gov.br/portal</option>
                                             </select>
                                             <small>Ou</small>
                                             <input id="urlInput" type="url" placeholder="Inserir URL" class="form-control form-control-lg">

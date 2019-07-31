@@ -1,3 +1,3 @@
-# ArcGIS Group Search v0.1
+# ArcGIS Portal Search v0.2
 
-Aplicação para buscar serviços de grupos do ArcGIS Portal.
+Aplicação para buscar itens do ArcGIS Portal.

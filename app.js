@@ -7,6 +7,9 @@ var app = {
     token: '',
     map: null,
     view: null,
+    basemap: null,
+    basemapGallery: null,
+    basemapExpand: null,
     legend: null,
     csvData: []
 };
@@ -540,231 +543,230 @@ function createDataTable(columns, data) {
 
 function createContextMenu(table) {
 
-    require(['esri/request'], function (esriRequest) {
+    $.contextMenu({
+        selector: '#table tbody tr',
+        callback: function(key) {
 
-        $.contextMenu({
-            selector: '#table tbody tr',
-            callback: function(key) {
+            var target = this;
+            var rowData = table.row(target).data();
+            var id = rowData[0];
+            var title = rowData[1];
+            var url = rowData[2];
 
-                var target = this;
-                var rowData = table.row(target).data();
-                var id = rowData[0];
-                var title = rowData[1];
-                var url = rowData[2];
+            switch (key) {
+                case 'view':
 
-                switch (key) {
-                    case 'view':
+                    preview(id);
 
-                        preview(id, title);
+                    break;
 
-                        break;
+                case 'portal':
 
-                    case 'portal':
+                    window.open(app.portal + '/home/item.html?id=' + id, '_blank');
 
-                        window.open(app.portal + '/home/item.html?id=' + id, '_blank');
+                    break;
 
-                        break;
+                case 'mapViewer':
 
-                    case 'mapViewer':
+                    window.open(app.portal + '/home/webmap/viewer.html?useExisting=1&layers=' + id, '_blank');
 
-                        window.open(app.portal + '/home/webmap/viewer.html?useExisting=1&layers=' + id, '_blank');
+                    break;
 
-                        break;
+                case 'sceneViewer':
 
-                    case 'sceneViewer':
+                    window.open(app.portal + '/home/webscene/viewer.html?webscene=' + id, '_blank');
 
-                        window.open(app.portal + '/home/webscene/viewer.html?webscene=' + id, '_blank');
+                    break;
 
-                        break;
+                case 'url':
 
-                    case 'url':
+                    window.open(url, '_blank');
+        
+                    break;
 
-                        window.open(url, '_blank');
-            
-                        break;
+                case 'metadata':
 
-                    case 'metadata':
+                    window.open(app.portal + '/sharing/rest/content/items/' + id + '/info/metadata/metadata.xml', '_blank');
 
-                        window.open(app.portal + '/sharing/rest/content/items/' + id + '/info/metadata/metadata.xml', '_blank');
+                    break;
 
-                        break;
+                case 'geojson':
 
-                    case 'geojson':
+                    downloadGeojson(url, title);
 
-                        downloadGeojson(url, title);
+                    break;
 
-                        break;
+                case 'kml':
 
-                    case 'kml':
+                    extractData(url, 'KML');
 
-                        extractData(url, 'KML');
+                    break;
 
-                        break;
+                case 'file':
 
-                    case 'file':
+                    window.open(app.portal + '/sharing/rest/content/items/' + id + '/data');
 
-                        window.open(app.portal + '/sharing/rest/content/items/' + id + '/data');
+                    break;
+            }
+        },
+        items: {
+            'view': {
+                name: 'Visualizar',
+                icon: 'fas fa-map-marker-alt',
+                visible : function() {
 
-                        break;
+                    var target = this;
+                    var rowData = table.row(target).data();
+                    var type = rowData[5];
+
+                    switch(type) {
+                        case 'Feature Collection':
+                        case 'Feature Service':
+                        case 'Image Service':
+                        case 'Map Service':
+                        case 'WMS':
+                            return true;
+                        default:
+                            return false;
+                    }
                 }
             },
-            items: {
-                'view': {
-                    name: 'Visualizar',
-                    icon: 'fas fa-map-marker-alt',
-                    visible : function() {
+            'open': {
+                name: 'Abrir no',
+                icon: 'fas fa-external-link-alt',
+                items: {
+                    'portal': {
+                        name: 'ArcGIS Portal', 
+                        icon: 'fas fa-globe-americas'
+                    },
+                    'mapViewer': {
+                        name: 'ArcGIS Map Viewer',
+                        icon: 'fas fa-map-marked-alt',
+                        visible : function() {
 
-                        var target = this;
-                        var rowData = table.row(target).data();
-                        var type = rowData[5];
-
-                        switch(type) {
-                            case 'Feature Collection':
-                            case 'Feature Service':
-                            case 'Image Service':
-                            case 'Map Service':
-                            case 'WMS':
-                                return true;
-                            default:
-                                return false;
-                        }
-                    }
-                },
-                'open': {
-                    name: 'Abrir no',
-                    icon: 'fas fa-external-link-alt',
-                    items: {
-                        'portal': {
-                            name: 'ArcGIS Portal', 
-                            icon: 'fas fa-globe-americas'
-                        },
-                        'mapViewer': {
-                            name: 'ArcGIS Map Viewer',
-                            icon: 'fas fa-map-marked-alt',
-                            visible : function() {
-
-                                var target = this;
-                                var rowData = table.row(target).data();
-                                var type = rowData[5];
-        
-                                switch(type) {
-                                    case 'Feature Collection':
-                                    case 'Feature Service':
-                                    case 'Image Service':
-                                    case 'Map Service':
-                                    case 'WFS':
-                                    case 'WMS':
-                                    case 'Web Map':   
-                                        return true;
-                                    default:
-                                        return false;
-                                }
-                            }
-                        },
-                        'sceneViewer': {
-                            name: 'ArcGIS Scene Viewer',
-                            icon: 'fas fa-layer-group',
-                            visible : function() {
-
-                                var target = this;
-                                var rowData = table.row(target).data();
-                                var type = rowData[5];
-        
-                                switch(type) {
-                                    case 'Web Scene':   
-                                        return true;
-                                    default:
-                                        return false;
-                                }
-                            }
-                        }
-                    }
-                },
-                'url': {
-                    name: 'URL',
-                    icon: 'fas fa-link',
-                    visible : function() {
-
-                        var target = this;
-                        var rowData = table.row(target).data();
-                        var url = rowData[2];
-
-                        if (url) {
-                            return true;
-                        }
-                        else {
-                            return false;
-                        }
-                    }
-                },
-                'metadata': {
-                    name: 'Metadados',
-                    icon: 'far fa-file-alt'
-                },
-                'download': {
-                    name: 'Baixar',
-                    icon: 'fas fa-cloud-download-alt',
-                    items: {
-                        'geojson': {
-                            name: 'GeoJSON',
-                            icon: 'fas fa-globe',
-                            visible : function() { 
-
-                                var target = this;
-                                var rowData = table.row(target).data();
-                                var type = rowData[5];
-        
-                                switch(type) {
-                                    case 'Feature Service':
-                                    case 'Map Service':
-                                        return true;
-                                    default:
-                                        return false;
-                                }
-                            }
-                        },
-                        'file': {
-                            name: 'Arquivo',
-                            icon: 'far fa-save',
-                            visible : function() { 
-
-                                var target = this;
-                                var rowData = table.row(target).data();
-                                var type = rowData[5];
-        
-                                switch(type) {
-                                    case 'Code Attachment':
-                                    case 'Shapefile':
-                                    case 'Style':
-                                    case 'Windows Mobile Package':
-                                        return true;
-                                    default:
-                                        return false;
-                                }
+                            var target = this;
+                            var rowData = table.row(target).data();
+                            var type = rowData[5];
+    
+                            switch(type) {
+                                case 'Feature Collection':
+                                case 'Feature Service':
+                                case 'Image Service':
+                                case 'Map Service':
+                                case 'WFS':
+                                case 'WMS':
+                                case 'Web Map':   
+                                    return true;
+                                default:
+                                    return false;
                             }
                         }
                     },
-                    visible : function() { 
+                    'sceneViewer': {
+                        name: 'ArcGIS Scene Viewer',
+                        icon: 'fas fa-layer-group',
+                        visible : function() {
 
-                        var target = this;
-                        var rowData = table.row(target).data();
-                        var type = rowData[5];
-
-                        switch(type) {
-                            case 'Code Attachment':
-                            case 'Feature Service':
-                            case 'Map Service':
-                            case 'Shapefile':
-                            case 'Style':
-                            case 'Windows Mobile Package':
-                                return true;
-                            default:
-                                return false;
+                            var target = this;
+                            var rowData = table.row(target).data();
+                            var type = rowData[5];
+    
+                            switch(type) {
+                                case 'Web Scene':   
+                                    return true;
+                                default:
+                                    return false;
+                            }
                         }
                     }
                 }
+            },
+            'url': {
+                name: 'URL',
+                icon: 'fas fa-link',
+                visible : function() {
+
+                    var target = this;
+                    var rowData = table.row(target).data();
+                    var url = rowData[2];
+
+                    if (url) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            },
+            'metadata': {
+                name: 'Metadados',
+                icon: 'far fa-file-alt'
+            },
+            'download': {
+                name: 'Baixar',
+                icon: 'fas fa-cloud-download-alt',
+                items: {
+                    'geojson': {
+                        name: 'GeoJSON',
+                        icon: 'fas fa-globe',
+                        visible : function() { 
+
+                            var target = this;
+                            var rowData = table.row(target).data();
+                            var type = rowData[5];
+    
+                            switch(type) {
+                                case 'Feature Service':
+                                case 'Map Service':
+                                    return true;
+                                default:
+                                    return false;
+                            }
+                        }
+                    },
+                    'file': {
+                        name: 'Arquivo',
+                        icon: 'far fa-save',
+                        visible : function() { 
+
+                            var target = this;
+                            var rowData = table.row(target).data();
+                            var type = rowData[5];
+    
+                            switch(type) {
+                                case 'Code Attachment':
+                                case 'Microsoft Excel':
+                                case 'Shapefile':
+                                case 'Style':
+                                case 'Windows Mobile Package':
+                                    return true;
+                                default:
+                                    return false;
+                            }
+                        }
+                    }
+                },
+                visible : function() { 
+
+                    var target = this;
+                    var rowData = table.row(target).data();
+                    var type = rowData[5];
+
+                    switch(type) {
+                        case 'Code Attachment':
+                        case 'Feature Service':
+                        case 'Map Service':
+                        case 'Microsoft Excel':
+                        case 'Shapefile':
+                        case 'Style':
+                        case 'Windows Mobile Package':
+                            return true;
+                        default:
+                            return false;
+                    }
+                }
             }
-        });
+        }
     });
 }
 
@@ -906,4 +908,14 @@ function extractData(layerUrl, format) {
             logError(e);
         });
     });
+}
+
+function logError(e) {
+
+    console.error(e);
+
+    $('#loader').hide();
+
+    toastr.clear();
+    toastr.error(e.message, e.name);
 }

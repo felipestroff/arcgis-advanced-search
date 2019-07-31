@@ -534,7 +534,7 @@ function createContextMenu(table) {
 
                 case 'metadata':
 
-                    window.open(app.portal + '/sharing/rest/content/items/' + id + '/info/metadata/metadata.xml', '_blank');
+                    window.open(app.portal + '/sharing/rest/content/items/' + id + '/info/metadata/metadata.xml?format=default&output=html', '_blank');
 
                     break;
 
@@ -572,6 +572,7 @@ function createContextMenu(table) {
                         case 'Feature Service':
                         case 'Image Service':
                         case 'Map Service':
+                        case 'Scene Service':
                         case 'WMS':
                             return true;
                         default:
@@ -648,7 +649,25 @@ function createContextMenu(table) {
             },
             'metadata': {
                 name: 'Metadados',
-                icon: 'far fa-file-alt'
+                icon: 'far fa-file-alt',
+                visible : function() {
+
+                    var target = this;
+                    var rowData = table.row(target).data();
+                    var type = rowData[5];
+
+                    switch(type) {
+                        case 'Feature Collection':
+                        case 'Feature Service':
+                        case 'Image Service':
+                        case 'Map Service':
+                        case 'Scene Service':
+                        case 'WMS':
+                            return true;
+                        default:
+                            return false;
+                    }
+                }
             },
             'download': {
                 name: 'Baixar',

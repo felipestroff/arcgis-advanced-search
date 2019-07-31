@@ -1,4 +1,3 @@
-// Global app variables
 var app = {
     type: null,
     filter: null,
@@ -24,44 +23,6 @@ $(document).ready(function() {
 
     // Init Bootstrap tooltip
     $('body').tooltip({selector: '[data-toggle="tooltip"]'});
-});
-
-require(['esri/Map', 'esri/views/MapView', 'esri/widgets/Home'], function(Map, MapView, Home) {
-
-    app.map = new Map({
-        basemap: 'streets'
-    });
-
-    app.view = new MapView({
-        container: 'viewDiv',
-        map: app.map,
-        center: [-52, -30],
-        zoom: 6
-    });
-
-    app.view.on('layerview-create', function (event) {
-
-        var layer = event.layer;
-
-        console.info('[LAYER]: ' + layer.title + ' (' + layer.type + ') loaded');
-    });
-
-    app.view.on('layerview-create-error', function (event) {
-        logError(e);
-    });
-
-    app.view.on('layerview-destroy', function (event) {
-
-        var layer = event.layer;
-
-        console.info('[LAYER]: ' + layer.title + ' (' + layer.type + ') removed');
-    });
-
-    var homeBtn = new Home({
-        view: app.view
-    });
-
-    app.view.ui.add(homeBtn, 'top-left');
 });
 
 function search(e) {
@@ -224,6 +185,9 @@ function searchGroupById(id) {
                         title: 'ID'
                     },
                     {
+                        title: 'Title'
+                    },
+                    {
                         title: 'URL'
                     },
                     {
@@ -255,6 +219,7 @@ function searchGroupById(id) {
                     var rows = [];
                     var downloadRows = [];
                     var thumbnail;
+                    var description;
                     var perfil = '<a href="' + app.portal + '/home/user.html?user=' + service.owner + '" target="_blank">' + service.owner + '</a>';
 
                     if (service.thumbnail) {
@@ -264,10 +229,19 @@ function searchGroupById(id) {
                         thumbnail = '<img src="images/default_thumb.png" class="img-thumbnail img-item">';
                     }
 
+                    if (service.description) {
+                        description = 
+                        '<div class="item-info">' +
+                            '<p>' + service.title + '</p>' +
+                            '<small class="text-muted">' + reduceDescription(service.description, 100) + '</small>' +
+                        '</div>';
+                    }
+
                     rows.push(service.id);
+                    rows.push(service.title);
                     rows.push(service.url);
                     rows.push(thumbnail);
-                    rows.push(service.title);
+                    rows.push(description);
                     rows.push(service.type);
                     rows.push(perfil);
 
@@ -388,6 +362,9 @@ function searchGroupByName(name) {
                                     title: 'ID'
                                 },
                                 {
+                                    title: 'Title'
+                                },
+                                {
                                     title: 'URL'
                                 },
                                 {
@@ -411,6 +388,7 @@ function searchGroupByName(name) {
                                 var rows = [];
                                 var downloadRows = [];
                                 var thumbnail;
+                                var description;
                                 var perfil = '<a href="' + app.portal + '/home/user.html?user=' + service.owner + '" target="_blank">' + service.owner + '</a>';
         
                                 if (service.thumbnail) {
@@ -420,10 +398,19 @@ function searchGroupByName(name) {
                                     thumbnail = '<img src="images/default_thumb.png" class="img-thumbnail img-item">';
                                 }
 
+                                if (service.description) {
+                                    description = 
+                                    '<div class="item-info">' +
+                                        '<p>' + service.title + '</p>' +
+                                        '<small class="text-muted">' + reduceDescription(service.description, 100) + '</small>' +
+                                    '</div>';
+                                }
+
                                 rows.push(service.id);
+                                rows.push(service.title);
                                 rows.push(service.url);
                                 rows.push(thumbnail);
-                                rows.push(service.title);
+                                rows.push(description);
                                 rows.push(service.type);
                                 rows.push(perfil);
         
@@ -516,10 +503,12 @@ function searchContent(query) {
 
             $('.navbar-nav').show();
 
-            var total = response.data.total;
             var columns = [
                 {
                     title: 'ID'
+                },
+                {
+                    title: 'Title'
                 },
                 {
                     title: 'URL'
@@ -547,16 +536,10 @@ function searchContent(query) {
 
                 itens.forEach(function(item) {
 
-                    console.log(item);
-
                     var rows = [];
                     var downloadRows = [];
                     var thumbnail;
-                    var description = 
-                        '<div>' +
-                            '<p>' + item.title + '</p>' +
-                            '<small class="text-muted">' + item.description + '</small>' +
-                        '</div>';
+                    var description;
                     var perfil = '<a href="' + app.portal + '/home/user.html?user=' + item.owner + '" target="_blank">' + item.owner + '</a>';
 
                     if (item.thumbnail) {
@@ -566,7 +549,16 @@ function searchContent(query) {
                         thumbnail = '<img src="images/default_thumb.png" class="img-thumbnail img-item">';
                     }
 
+                    if (item.description) {
+                        description = 
+                        '<div class="item-info">' +
+                            '<p>' + item.title + '</p>' +
+                            '<small class="text-muted">' + reduceDescription(item.description, 100) + '</small>' +
+                        '</div>';
+                    }
+
                     rows.push(item.id);
+                    rows.push(item.title);
                     rows.push(item.url);
                     rows.push(thumbnail);
                     rows.push(description);
@@ -589,7 +581,7 @@ function searchContent(query) {
                     var link = document.createElement('a');
 
                     link.setAttribute('href', csvContent);
-                    link.setAttribute('download', name + '.csv');
+                    link.setAttribute('download', query + '.csv');
                     document.body.appendChild(link);
 
                     link.click();
@@ -597,7 +589,7 @@ function searchContent(query) {
 
                 $('.loader').hide();
 
-                toastr.success('', total + ' itens encontrados');
+                toastr.success('', itens.length + ' itens encontrados');
             }
             else {
 
@@ -792,13 +784,17 @@ function createDataTable(columns, data) {
         'order': [],
         'columnDefs': [
             {
-                'targets': [0, 1],
+                'targets': [0, 1, 2],
                 'visible': false
             },
             {
-                'targets': [0, 1, 2],
+                'targets': [0, 1, 2, 3],
                 'searchable': false,
                 'orderable': false
+            },
+            {
+                'targets': [5, 6],
+                'className': 'text-center'
             }
         ],
         'columns': columns,
@@ -819,8 +815,8 @@ function createContextMenu(table) {
                 var target = this;
                 var rowData = table.row(target).data();
                 var id = rowData[0];
-                var url = rowData[1];
-                var title = rowData[3];
+                var title = rowData[1];
+                var url = rowData[2];
 
                 switch (key) {
                     case 'view':
@@ -880,7 +876,7 @@ function createContextMenu(table) {
 
                         var target = this;
                         var rowData = table.row(target).data();
-                        var type = rowData[4];
+                        var type = rowData[5];
 
                         switch(type) {
                             case 'Feature Service':
@@ -908,7 +904,7 @@ function createContextMenu(table) {
 
                                 var target = this;
                                 var rowData = table.row(target).data();
-                                var type = rowData[4];
+                                var type = rowData[5];
         
                                 switch(type) {
                                     case 'Feature Service':
@@ -932,7 +928,7 @@ function createContextMenu(table) {
 
                         var target = this;
                         var rowData = table.row(target).data();
-                        var url = rowData[1];
+                        var url = rowData[2];
 
                         if (url) {
                             return true;
@@ -957,7 +953,7 @@ function createContextMenu(table) {
 
                                 var target = this;
                                 var rowData = table.row(target).data();
-                                var type = rowData[4];
+                                var type = rowData[5];
         
                                 switch(type) {
                                     case 'Feature Service':
@@ -975,11 +971,12 @@ function createContextMenu(table) {
 
                                 var target = this;
                                 var rowData = table.row(target).data();
-                                var type = rowData[4];
+                                var type = rowData[5];
         
                                 switch(type) {
                                     case 'Code Attachment':
                                     case 'Shapefile':
+                                    case 'Style':
                                     case 'Windows Mobile Package':
                                         return true;
                                     default:
@@ -992,13 +989,14 @@ function createContextMenu(table) {
 
                         var target = this;
                         var rowData = table.row(target).data();
-                        var type = rowData[4];
+                        var type = rowData[5];
 
                         switch(type) {
                             case 'Code Attachment':
                             case 'Feature Service':
                             case 'Map Service':
                             case 'Shapefile':
+                            case 'Style':
                             case 'Windows Mobile Package':
                                 return true;
                             default:
@@ -1011,93 +1009,11 @@ function createContextMenu(table) {
     });
 }
 
-function preview(id, title) {
-
-    require(['esri/layers/Layer'], function(Layer) {
-
-        app.map.removeAll();
-        app.view.popup.close();
-
-        Layer.fromPortalItem({
-            portalItem: {
-                id: id
-            }
-        })
-        .then(function(layer) {
-
-            $('.loader').show();
-    
-            app.map.add(layer);
-
-            layer.when(function() {
-    
-                createLayerLegend(layer);
-                createLayerPopup(layer);
-
-                app.view.goTo(layer.fullExtent);
-
-                $('.loader').hide();
-
-                $('#previewModal .modal-title').html(title);
-                $('#previewModal').modal();
-            });
-        })
-        .catch(function(e) {
-            logError(e);
-        });
-    });
-}
-
-function createLayerLegend(layer) {
-
-    require(['esri/widgets/Legend'], function(Legend) {
-
-        app.view.ui.remove(app.legend);
-
-        app.legend = new Legend({
-            view: app.view,
-            layerInfos: [
-                {
-                    layer: layer
-                }
-            ]
-        });
-
-        app.view.ui.add(app.legend, 'bottom-right');
-    });
-}
-
-function createLayerPopup(layer) {
-
-    var fields = layer.source.layerDefinition.fields;
-    var layerFields = [];
-
-    fields.forEach(function(field) {
-
-        layerFields.push({
-            fieldName: field.name,
-            label: field.alias,
-            visible: true
-        });
-    });
-
-    var template = {
-        title: layer.title,
-        content: [{
-            type: 'fields',
-            fieldInfos: layerFields
-        }]
-    };
-        
-    layer.popupTemplate = template;
-}
-
-function logError(e) {
-
-    console.error(e);
-
-    $('.loader').hide();
-
-    toastr.clear();
-    toastr.error(e.message, e.name);
+function reduceDescription(text, number) {
+    if (text.length > number) {
+        return text.substring(0, number - 5) + '...';
+    }
+    else {
+        return text;
+    }
 }

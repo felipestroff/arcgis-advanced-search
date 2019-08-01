@@ -393,6 +393,9 @@ function createItens(itens) {
         },
         {
             title: 'Proprietário(a)'
+        },
+        {
+            title: 'Tags'
         }
     ];
     var data = [];
@@ -404,6 +407,7 @@ function createItens(itens) {
         var thumbnail;
         var description;
         var profile = '<a href="' + app.portal + '/home/user.html?user=' + item.owner + '" target="_blank">' + item.owner + '</a>';
+        var tags = [];
 
         if (item.thumbnail) {
             thumbnail = '<img src="' + app.portal + '/sharing/rest/content/items/' + item.id + '/info/' + item.thumbnail + '" class="img-thumbnail img-item">';
@@ -421,6 +425,12 @@ function createItens(itens) {
             description = item.title;
         }
 
+        item.tags.forEach(function(tag) {
+            tags.push(
+                ' <a href="' + app.portal + '/home/search.html?t=content&q=tags:' + tag + '" target="_blank">' + tag + '</a>'
+            );
+        });
+
         rows.push(item.id);
         rows.push(item.title);
         rows.push(item.url);
@@ -428,6 +438,7 @@ function createItens(itens) {
         rows.push(description);
         rows.push(item.type);
         rows.push(profile);
+        rows.push(tags);
 
         data.push(rows);
 
@@ -442,7 +453,7 @@ function createItens(itens) {
 
 function reduceDescription(text, number) {
     if (text.length > number) {
-        return text.substring(0, number - 5) + '...';
+        return text.substring(0, number - 3) + '...';
     }
     else {
         return text;
@@ -480,6 +491,18 @@ function createDataTable(columns, data) {
             {
                 'targets': [3, 5, 6],
                 'className': 'text-center'
+            },
+            {
+                'targets': [4],
+                'className': 'width-55'
+            },
+            {
+                'targets': [3, 5, 6],
+                'className': 'width-10'
+            },
+            {
+                'targets': [7],
+                'className': 'width-15'
             }
         ],
         'columns': columns,
@@ -500,6 +523,7 @@ function createContextMenu(table) {
             var id = rowData[0];
             var title = rowData[1];
             var url = rowData[2];
+            var type = rowData[5];
 
             switch (key) {
                 case 'view':
@@ -522,7 +546,18 @@ function createContextMenu(table) {
 
                 case 'sceneViewer':
 
-                    window.open(app.portal + '/home/webscene/viewer.html?webscene=' + id, '_blank');
+                    if (type === 'Vector Tile Service' || type === 'Scene Service') {
+                        window.open(app.portal + '/home/webscene/viewer.html?layers=' + id, '_blank');
+                    }
+                    else {
+                        window.open(app.portal + '/home/webscene/viewer.html?webscene=' + id, '_blank');
+                    }
+
+                    break;
+
+                case 'operationsDashboard':
+
+                    window.open(app.portal + '/apps/opsdashboard/index.html#/' + id, '_blank');
 
                     break;
 
@@ -561,7 +596,7 @@ function createContextMenu(table) {
             'view': {
                 name: 'Visualizar',
                 icon: 'fas fa-map-marker-alt',
-                visible : function() {
+                disabled : function() {
 
                     var target = this;
                     var rowData = table.row(target).data();
@@ -574,9 +609,9 @@ function createContextMenu(table) {
                         case 'Map Service':
                         case 'Scene Service':
                         case 'WMS':
-                            return true;
-                        default:
                             return false;
+                        default:
+                            return true;
                     }
                 }
             },
@@ -591,7 +626,7 @@ function createContextMenu(table) {
                     'mapViewer': {
                         name: 'ArcGIS Map Viewer',
                         icon: 'fas fa-map-marked-alt',
-                        visible : function() {
+                        disabled : function() {
 
                             var target = this;
                             var rowData = table.row(target).data();
@@ -602,29 +637,46 @@ function createContextMenu(table) {
                                 case 'Feature Service':
                                 case 'Image Service':
                                 case 'Map Service':
+                                case 'Vector Tile Service':
                                 case 'WFS':
                                 case 'WMS':
                                 case 'Web Map':   
-                                    return true;
-                                default:
                                     return false;
+                                default:
+                                    return true;
                             }
                         }
                     },
                     'sceneViewer': {
                         name: 'ArcGIS Scene Viewer',
                         icon: 'fas fa-layer-group',
-                        visible : function() {
+                        disabled : function() {
 
                             var target = this;
                             var rowData = table.row(target).data();
                             var type = rowData[5];
     
                             switch(type) {
-                                case 'Web Scene':   
-                                    return true;
-                                default:
+                                case 'Scene Service':
+                                case 'Vector Tile Service':
+                                case 'Web Scene':  
                                     return false;
+                                default:
+                                    return true;
+                            }
+                        }
+                    },
+                    'operationsDashboard': {
+                        name: 'ArcGIS Operations Dashboard',
+                        icon: 'fas fa-tachometer-alt',
+                        disabled : function() {
+
+                            var target = this;
+                            var rowData = table.row(target).data();
+                            var type = rowData[5];
+    
+                            if (type !== 'Dashboard') {
+                                return true;
                             }
                         }
                     }
@@ -633,24 +685,24 @@ function createContextMenu(table) {
             'url': {
                 name: 'URL',
                 icon: 'fas fa-link',
-                visible : function() {
+                disabled : function() {
 
                     var target = this;
                     var rowData = table.row(target).data();
                     var url = rowData[2];
 
                     if (url) {
-                        return true;
+                        return false;
                     }
                     else {
-                        return false;
+                        return true;
                     }
                 }
             },
             'metadata': {
                 name: 'Metadados',
                 icon: 'far fa-file-alt',
-                visible : function() {
+                disabled : function() {
 
                     var target = this;
                     var rowData = table.row(target).data();
@@ -661,11 +713,12 @@ function createContextMenu(table) {
                         case 'Feature Service':
                         case 'Image Service':
                         case 'Map Service':
+                        case 'Service Definition':
                         case 'Scene Service':
                         case 'WMS':
-                            return true;
-                        default:
                             return false;
+                        default:
+                            return true;
                     }
                 }
             },
@@ -676,7 +729,7 @@ function createContextMenu(table) {
                     'geojson': {
                         name: 'GeoJSON',
                         icon: 'fas fa-globe',
-                        visible : function() { 
+                        disabled : function() { 
 
                             var target = this;
                             var rowData = table.row(target).data();
@@ -685,16 +738,16 @@ function createContextMenu(table) {
                             switch(type) {
                                 case 'Feature Service':
                                 case 'Map Service':
-                                    return true;
-                                default:
                                     return false;
+                                default:
+                                    return true;
                             }
                         }
                     },
                     'file': {
                         name: 'Arquivo',
                         icon: 'far fa-save',
-                        visible : function() { 
+                        disabled : function() { 
 
                             var target = this;
                             var rowData = table.row(target).data();
@@ -703,17 +756,19 @@ function createContextMenu(table) {
                             switch(type) {
                                 case 'Code Attachment':
                                 case 'Microsoft Excel':
+                                case 'KML':
+                                case 'Service Definition':
                                 case 'Shapefile':
                                 case 'Style':
                                 case 'Windows Mobile Package':
-                                    return true;
-                                default:
                                     return false;
+                                default:
+                                    return true;
                             }
                         }
                     }
                 },
-                visible : function() { 
+                disabled : function() { 
 
                     var target = this;
                     var rowData = table.row(target).data();
@@ -722,14 +777,16 @@ function createContextMenu(table) {
                     switch(type) {
                         case 'Code Attachment':
                         case 'Feature Service':
+                        case 'KML':
                         case 'Map Service':
                         case 'Microsoft Excel':
+                        case 'Service Definition':
                         case 'Shapefile':
                         case 'Style':
                         case 'Windows Mobile Package':
-                            return true;
-                        default:
                             return false;
+                        default:
+                            return true;
                     }
                 }
             }

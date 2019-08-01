@@ -132,3 +132,15 @@ fieldset legend {
 #filters {
     display: none;
 }
+
+.width-10 {
+    width: 10%;
+}
+
+.width-15 {
+    width: 15%;
+}
+
+.width-55 {
+    width: 55%;
+}

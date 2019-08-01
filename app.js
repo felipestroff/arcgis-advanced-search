@@ -636,6 +636,7 @@ function createContextMenu(table) {
                                 case 'Feature Collection':
                                 case 'Feature Service':
                                 case 'Image Service':
+                                case 'KML':
                                 case 'Map Service':
                                 case 'Vector Tile Service':
                                 case 'WFS':
@@ -755,6 +756,7 @@ function createContextMenu(table) {
     
                             switch(type) {
                                 case 'Code Attachment':
+                                case 'GeoJson':
                                 case 'Microsoft Excel':
                                 case 'KML':
                                 case 'Service Definition':
@@ -777,6 +779,7 @@ function createContextMenu(table) {
                     switch(type) {
                         case 'Code Attachment':
                         case 'Feature Service':
+                        case 'GeoJson':
                         case 'KML':
                         case 'Map Service':
                         case 'Microsoft Excel':

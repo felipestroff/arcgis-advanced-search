@@ -10,7 +10,7 @@
     background-size: 50px;
 }
 
-#table {
+#table, .table-hidden {
     width: 100% !important;
 }
 
@@ -137,14 +137,18 @@ fieldset legend {
     width: 10%;
 }
 
-.width-15 {
-    width: 15%;
-}
-
-.width-55 {
-    width: 55%;
-}
-
 .vertical-align-middle {
     vertical-align: middle !important;
+}
+
+.table-hidden tbody tr {
+    background-color: #ffffff !important;
+}
+
+td.details-control {
+    background: url('../images/details_open.png') no-repeat center center;
+    cursor: pointer;
+}
+tr.shown td.details-control {
+    background: url('../images/details_close.png') no-repeat center center;
 }

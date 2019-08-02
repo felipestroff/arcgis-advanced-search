@@ -1,10 +1,4 @@
-// Read config.json
-$.getJSON('config.json', function(data) {
-    $('title').html(data.name);
-    $('#group').html(data.name);
-    $('#version').html('v' + data.version);
-});
-
+// Global attributes
 var app = {
     type: '',
     filter: '',
@@ -21,6 +15,13 @@ var app = {
     legend: null,
     csvData: []
 };
+
+// Read config.json
+$.getJSON('config.json', function(data) {
+    $('title').html(data.name);
+    $('#group').html(data.name);
+    $('#version').html('v' + data.version);
+});
 
 $(document).ready(function() {
 
@@ -381,29 +382,51 @@ function searchContent(query) {
 function createItens(itens) {
 
     var columns = [
+        // ID
         {
-            title: 'ID'
+            visible: false,
+            searchable: false,
+            orderable: false
         },
+        // URL
         {
-            title: 'Title'
+            visible: false,
+            searchable: false,
+            orderable: false
         },
+        // Thumbnail
         {
-            title: 'URL'
+            className: 'text-center vertical-align-middle width-10',
+            searchable: false,
+            orderable: false
         },
-        {
-            title: '',
-        },
+        // Title
         {
             title: 'Nome'
         },
+        // Type
         {
-            title: 'Tipo'
+            title: 'Tipo',
+            className: 'text-center vertical-align-middle',
         },
+        // Description
         {
-            title: 'Proprietário(a)'
+            visible: false
         },
+        // Profile
         {
-            title: 'Tags'
+            visible: false
+        },
+        // Tags
+        {
+            visible: false
+        },
+        // Action
+        {
+            className: 'details-control',
+            orderable: false,
+            data: null,
+            defaultContent: ''
         }
     ];
     var data = [];
@@ -413,9 +436,6 @@ function createItens(itens) {
         var rows = [];
         var downloadedRows = [];
         var thumbnail;
-        var description;
-        var profile = '<a href="' + app.portal + '/home/user.html?user=' + item.owner + '" target="_blank">' + item.owner + '</a>';
-        var tags = [];
 
         if (item.thumbnail) {
             thumbnail = '<img src="' + app.portal + '/sharing/rest/content/items/' + item.id + '/info/' + item.thumbnail + '" class="img-thumbnail img-item">';
@@ -424,29 +444,14 @@ function createItens(itens) {
             thumbnail = '<img src="images/default_thumb.jpg" class="img-thumbnail img-item">';
         }
 
-        if (item.description) {
-            description = 
-                '<p>' + item.title + '</p>' +
-                '<small class="text-muted">' + reduceDescription(item.description, 100) + '</small>';
-        }
-        else {
-            description = item.title;
-        }
-
-        item.tags.forEach(function(tag) {
-            tags.push(
-                ' <a href="' + app.portal + '/home/search.html?t=content&q=tags:' + tag + '" target="_blank">' + tag + '</a>'
-            );
-        });
-
         rows.push(item.id);
-        rows.push(item.title);
         rows.push(item.url);
         rows.push(thumbnail);
-        rows.push(description);
+        rows.push(item.title);
         rows.push(item.type);
-        rows.push(profile);
-        rows.push(tags);
+        rows.push(item.description);
+        rows.push(item.owner);
+        rows.push(item.tags);
 
         data.push(rows);
 
@@ -457,15 +462,6 @@ function createItens(itens) {
     app.table = createDataTable(columns, data);
         
     createContextMenu();
-}
-
-function reduceDescription(text, number) {
-    if (text.length > number) {
-        return text.substring(0, number - 3) + '...';
-    }
-    else {
-        return text;
-    }
 }
 
 function createDataTable(columns, data) {
@@ -486,32 +482,58 @@ function createDataTable(columns, data) {
             'searchPlaceholder': 'Pesquisar...',
         },
         'order': [],
-        'columnDefs': [
-            {
-                'targets': [0, 1, 2],
-                'visible': false
-            },
-            {
-                'targets': [0, 1, 2, 3],
-                'searchable': false,
-                'orderable': false
-            },
-            {
-                'targets': [3, 5, 6],
-                'className': 'text-center vertical-align-middle width-10'
-            },
-            {
-                'targets': [4],
-                'className': 'width-55'
-            },
-            {
-                'targets': [7],
-                'className': 'vertical-align-middle width-15'
-            }
-        ],
         'columns': columns,
         'data': data
     });
+
+    $('#table tbody').on('click', 'td.details-control', function() {
+
+        var tr = $(this).closest('tr');
+        var row = table.row(tr);
+ 
+        if (row.child.isShown()) {
+            // This row is already open - close it
+            row.child.hide();
+            tr.removeClass('shown');
+        }
+        else {
+            // Open this row
+            row.child(format(row.data())).show();
+            tr.addClass('shown');
+        }
+    });
+
+    return table;
+}
+
+function format(data) {
+
+    var description = data[5];
+    var owner = data[6];
+    var tags = data[7];
+    var tagsContent = [];
+
+    tags.forEach(function(tag) {
+        tagsContent.push(
+            ' <a href="' + app.portal + '/home/search.html?t=content&q=tags:' + tag + '" target="_blank">' + tag + '</a>'
+        );
+    });
+
+    var table = 
+    '<table class="table table-hidden">'+
+        '<tr>'+
+            '<td style="width: 10%;">Descrição:</td>'+
+            '<td style="width: 90%;"><small class="text-muted">' + description + '</small></td>'+
+        '</tr>'+
+        '<tr>'+
+            '<td style="width: 10%;">Proprietário(a):</td>'+
+            '<td style="width: 90%;"><a href="' + app.portal + '/home/user.html?user=' + owner + '" target="_blank">' + owner + '</a></td>'+
+        '</tr>'+
+        '<tr>'+
+            '<td style="width: 10%;">Tags:</td>'+
+            '<td style="width: 90%;">' + tagsContent + '</td>'+
+        '</tr>'+
+    '</table>';
 
     return table;
 }
@@ -730,9 +752,9 @@ function contextMenuCallback(key) {
     var target = this;
     var rowData = app.table.row(target).data();
     var id = rowData[0];
-    var title = rowData[1];
-    var url = rowData[2];
-    var type = rowData[5];
+    var url = rowData[1];
+    var title = rowData[3];
+    var type = rowData[4];
 
     switch (key) {
         case 'view':
@@ -811,7 +833,7 @@ function disabledView() {
 
     var target = this;
     var rowData = app.table.row(target).data();
-    var type = rowData[5];
+    var type = rowData[4];
 
     switch(type) {
         case 'Feature Collection':
@@ -831,7 +853,7 @@ function disabledMapViewer() {
 
     var target = this;
     var rowData = app.table.row(target).data();
-    var type = rowData[5];
+    var type = rowData[4];
 
     switch(type) {
         case 'Feature Collection':
@@ -853,7 +875,7 @@ function disabledSceneViewer() {
 
     var target = this;
     var rowData = app.table.row(target).data();
-    var type = rowData[5];
+    var type = rowData[4];
 
     switch(type) {
         case 'Scene Service':
@@ -869,7 +891,7 @@ function disabledDashboard() {
 
     var target = this;
     var rowData = app.table.row(target).data();
-    var type = rowData[5];
+    var type = rowData[4];
 
     if (type !== 'Dashboard') {
         return true;
@@ -880,7 +902,7 @@ function disabledUrl() {
 
     var target = this;
     var rowData = app.table.row(target).data();
-    var url = rowData[2];
+    var url = rowData[4];
 
     if (url) {
         return false;
@@ -894,7 +916,7 @@ function disabledMetadata() {
 
     var target = this;
     var rowData = app.table.row(target).data();
-    var type = rowData[5];
+    var type = rowData[4];
 
     switch(type) {
         case 'Feature Collection':
@@ -915,7 +937,7 @@ function disabledGeojson() {
 
     var target = this;
     var rowData = app.table.row(target).data();
-    var type = rowData[5];
+    var type = rowData[4];
 
     switch(type) {
         case 'Feature Service':
@@ -930,7 +952,7 @@ function disabledFile() {
 
     var target = this;
     var rowData = app.table.row(target).data();
-    var type = rowData[5];
+    var type = rowData[4];
 
     switch(type) {
         case '360 VR Experience':
@@ -987,7 +1009,7 @@ function disabledDownload() {
 
     var target = this;
     var rowData = app.table.row(target).data();
-    var type = rowData[5];
+    var type = rowData[4];
 
     switch(type) {
         case '360 VR Experience':

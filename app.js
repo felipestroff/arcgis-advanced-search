@@ -1,3 +1,10 @@
+// Read config.json
+$.getJSON('config.json', function(data) {
+    $('title').html(data.name);
+    $('#group').html(data.name);
+    $('#version').html('v' + data.version);
+});
+
 var app = {
     type: '',
     filter: '',

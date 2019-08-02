@@ -35,12 +35,12 @@ function search(e) {
 
     e.preventDefault();
 
-    var urlInput = document.getElementById('urlInput');
-    var query = document.getElementById('query');
+    var urlInput = document.getElementById('urlInput').value;
+    var query = document.getElementById('query').value;
 
-    if (urlInput.value !== '') {
+    if (urlInput !== '') {
 
-        var url = new URL(urlInput.value);
+        var url = new URL(urlInput);
 
         app.url = url.origin;
         app.portal = url.href;
@@ -48,14 +48,14 @@ function search(e) {
         if (app.type === 'groups') {
 
             if (app.filter === 'id') {
-                searchGroupById(query.value);
+                searchGroupById(query);
             }
             else {
-                searchGroupByName(query.value);
+                searchGroupByName(query);
             }
         }
         else {
-            searchContent(query.value);
+            searchContent(query);
         }
     }
 }
@@ -96,17 +96,17 @@ function setSearchType(type) {
 
         document.getElementById('groupID').setAttribute('required', true);
 
-        $('#types .alert').hide();
+        $('#types .alert').hide(500);
 
-        $('#filters').show();
+        $('#filters').show(500);
     }
     else {
 
         document.getElementById('groupID').removeAttribute('required');
 
-        $('#types .alert').show();
+        $('#types .alert').show(500);
 
-        $('#filters').hide();
+        $('#filters').hide(500);
     }
 }
 
@@ -115,10 +115,10 @@ function setSearchFilter(el) {
     app.filter = el.value;
 
     if (el.value === 'name') {
-        $('#filters .alert').show();
+        $('#filters .alert').show(500);
     }
     else {
-        $('#filters .alert').hide();
+        $('#filters .alert').hide(500);
     }
 }
 
@@ -789,7 +789,12 @@ function contextMenuCallback(key) {
 
         case 'file':
 
-            window.open(app.portal + '/sharing/rest/content/items/' + id + '/data', '_self');
+            if (type === 'Image') {
+                window.open(app.portal + '/sharing/rest/content/items/' + id + '/data', '_blank');
+            }
+            else {
+                window.open(app.portal + '/sharing/rest/content/items/' + id + '/data', '_self');
+            }
 
             break;
     }
@@ -805,6 +810,7 @@ function disabledView() {
         case 'Feature Collection':
         case 'Feature Service':
         case 'Image Service':
+        case 'KML':
         case 'Map Service':
         case 'Scene Service':
         case 'WMS':
@@ -890,6 +896,7 @@ function disabledMetadata() {
         case 'Map Service':
         case 'Service Definition':
         case 'Scene Service':
+        case 'WFS':
         case 'WMS':
             return false;
         default:
@@ -921,17 +928,47 @@ function disabledFile() {
     switch(type) {
         case '360 VR Experience':
         case 'ArcGIS Pro Add In':
+        case 'Basemap Package':
+        case 'CAD Drawing':
         case 'Code Attachment':
         case 'Code Sample':
+        case 'CSV':
+        case 'CSV Collection':
         case 'Desktop Add In':
         case 'Desktop Application':
+        case 'Desktop Application Template':
+        case 'Desktop Style':
+        case 'Deep Learning Package':
+        case 'File Geodatabase':
         case 'GeoJson':
+        case 'GeoPackage':
         case 'Geoprocessing Package':
+        case 'Geoprocessing Sample':
+        case 'Image':
+        case 'Layer':
+        case 'Layer Package':
+        case 'Layout':
+        case 'Locator Package':
+        case 'Map Package':
         case 'Microsoft Excel':
+        case 'Microsoft Powerpoint':
+        case 'Microsoft Word':
+        case 'Mobile Map Package':
+        case 'Mobile Scene Package':
         case 'KML':
+        case 'KML Collection':
+        case 'Pro Map':
+        case 'Project Template':
+        case 'Project Package':
+        case 'Raster function template':
+        case 'Rule Package':
+        case 'Scene Package':
         case 'Service Definition':
         case 'Shapefile':
         case 'Style':
+        case 'Tile Package':
+        case 'Vector Tile Package':
+        case 'Web Mapping Application':
         case 'Windows Mobile Package':
             return false;
         default:
@@ -948,19 +985,49 @@ function disabledDownload() {
     switch(type) {
         case '360 VR Experience':
         case 'ArcGIS Pro Add In':
+        case 'Basemap Package':
+        case 'CAD Drawing':
         case 'Code Attachment':
         case 'Code Sample':
+        case 'CSV':
+        case 'CSV Collection':
         case 'Desktop Add In':
         case 'Desktop Application':
+        case 'Desktop Application Template':
+        case 'Desktop Style':
+        case 'Deep Learning Package':
         case 'Feature Service':
+        case 'File Geodatabase':
         case 'GeoJson':
+        case 'GeoPackage':
         case 'Geoprocessing Package':
+        case 'Geoprocessing Sample':
+        case 'Image':
+        case 'Layer':
+        case 'Layer Package':
+        case 'Layout':
+        case 'Locator Package':
         case 'KML':
+        case 'KML Collection':
+        case 'Map Package':
         case 'Map Service':
         case 'Microsoft Excel':
+        case 'Microsoft Powerpoint':
+        case 'Microsoft Word':
+        case 'Mobile Map Package':
+        case 'Mobile Scene Package':
+        case 'Pro Map':
+        case 'Project Template':
+        case 'Project Package':
+        case 'Raster function template':
+        case 'Rule Package':
+        case 'Scene Package':
         case 'Service Definition':
         case 'Shapefile':
         case 'Style':
+        case 'Tile Package':
+        case 'Vector Tile Package':
+        case 'Web Mapping Application':
         case 'Windows Mobile Package':
             return false;
         default:

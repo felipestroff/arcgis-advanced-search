@@ -33,6 +33,7 @@ $(document).ready(function() {
     // Update then to responsive
     $('#modal').modal('handleUpdate');
     $('#groupModal').modal('handleUpdate');
+    $('#publishModal').modal('handleUpdate');
     $('#previewModal').modal('handleUpdate');
 
     // Init Bootstrap tooltip
@@ -582,6 +583,11 @@ function createContextMenu() {
                 icon: 'far fa-file-alt',
                 disabled: disabledMetadata
             },
+            'publish': {
+                name: 'Publicar',
+                icon: 'fas fa-cloud-upload-alt',
+                disabled: disabledPublish
+            },
             'download': {
                 name: 'Baixar',
                 icon: 'fas fa-cloud-download-alt',
@@ -808,6 +814,16 @@ function contextMenuCallback(key) {
 
             break;
 
+        case 'publish':
+
+            document.getElementById('itemID').value = id;
+            document.getElementById('fileType').value = type.toLowerCase();
+            document.getElementById('itemName').value = '';
+
+            $('#publishModal').modal('show');
+
+            break;
+
         case 'geojson':
 
             downloadGeojson(url, title);
@@ -831,6 +847,82 @@ function contextMenuCallback(key) {
 
             break;
     }
+}
+
+function publish(e) {
+
+    e.preventDefault();
+
+    var itemID = document.getElementById('itemID').value;
+    var fileType = document.getElementById('fileType').value;
+    var itemName = document.getElementById('itemName').value;
+
+    publishItem(itemID, fileType, itemName);
+
+    $('#publishModal').modal('hide');
+}
+
+function publishItem(itemID, fileType, itemName) {
+
+    toastr.clear();
+    toastr.info('Processando publicação...', 'Aguarde', {
+        timeOut: 0, 
+        extendedTimeOut: 0
+    });
+
+    require(['esri/request'], function(esriRequest) {
+
+        var data = new FormData();
+        var publishParameters = {
+            name: itemName,
+            title: itemName
+        };
+
+        data.append('itemid', itemID);
+        data.append('filetype', fileType);
+        data.append('publishParameters', JSON.stringify(publishParameters));
+        data.append('f', 'json');
+
+        var options = {
+            body: data
+        };
+
+        esriRequest(app.portal + '/sharing/rest/content/users/publish', options).then(function() {
+            // TODO
+        }).catch(() => {
+            
+            var username = document.getElementById('dijit_form_ValidationTextBox_0').value;
+            var userContent = document.getElementById('user');
+
+            userContent.innerHTML = username;
+
+            esriRequest(app.portal + '/sharing/rest/content/users/' + username + '/publish', options).then(function(response) {
+
+                toastr.clear();
+
+                var error = response.data.services[0].error;
+
+                if (error) {
+                    logError(error);
+                }
+                else {
+
+                    var id = response.data.services[0].serviceItemId;
+                    
+                    toastr.success('Clique para acessar', 'Item publicado!', {
+                        timeOut: 0, 
+                        extendedTimeOut: 0,
+                        onclick: function () {
+                            window.open(app.portal + '/home/item.html?id=' + id, '_blank');
+                        }
+                    });
+                }
+
+            }).catch((e) => {
+                logError(e);
+            });
+        });
+    });
 }
 
 function disabledView() {
@@ -937,6 +1029,20 @@ function disabledMetadata() {
     }
 }
 
+function disabledPublish() {
+
+    var target = this;
+    var rowData = app.table.row(target).data();
+    var type = rowData[4];
+
+    switch(type) {
+        case 'Shapefile':
+            return false;
+        default:
+            return true;
+    }
+}
+
 function disabledGeojson() {
 
     var target = this;
@@ -988,6 +1094,7 @@ function disabledFile() {
         case 'Microsoft Word':
         case 'Mobile Map Package':
         case 'Mobile Scene Package':
+        case 'Notebook':
         case 'KML':
         case 'KML Collection':
         case 'Pro Map':
@@ -1049,6 +1156,7 @@ function disabledDownload() {
         case 'Microsoft Word':
         case 'Mobile Map Package':
         case 'Mobile Scene Package':
+        case 'Notebook':
         case 'Pro Map':
         case 'Project Template':
         case 'Project Package':

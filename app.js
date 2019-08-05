@@ -520,15 +520,15 @@ function format(data) {
     var table = 
     '<table class="table table-hidden">'+
         '<tr>'+
-            '<td style="width: 10%;">Descrição:</td>'+
+            '<td style="width: 10%; vertical-align: middle;">Descrição:</td>'+
             '<td style="width: 90%;"><small class="text-muted">' + description + '</small></td>'+
         '</tr>'+
         '<tr>'+
-            '<td style="width: 10%;">Proprietário(a):</td>'+
+            '<td style="width: 10%; vertical-align: middle;">Proprietário(a):</td>'+
             '<td style="width: 90%;"><a href="' + app.portal + '/home/user.html?user=' + owner + '" target="_blank">' + owner + '</a></td>'+
         '</tr>'+
         '<tr>'+
-            '<td style="width: 10%;">Tags:</td>'+
+            '<td style="width: 10%; vertical-align: middle;">Tags:</td>'+
             '<td style="width: 90%;">' + tagsContent + '</td>'+
         '</tr>'+
     '</table>';

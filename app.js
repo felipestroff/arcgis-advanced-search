@@ -818,6 +818,7 @@ function contextMenuCallback(key) {
 
             document.getElementById('itemID').value = id;
             document.getElementById('fileType').value = type.toLowerCase();
+            document.getElementById('itemTitle').value = title;
             document.getElementById('itemName').value = '';
 
             $('#publishModal').modal('show');
@@ -849,7 +850,7 @@ function contextMenuCallback(key) {
     }
 }
 
-function publish(e) {
+function publishItem(e) {
 
     e.preventDefault();
 
@@ -857,72 +858,70 @@ function publish(e) {
     var fileType = document.getElementById('fileType').value;
     var itemName = document.getElementById('itemName').value;
 
-    publishItem(itemID, fileType, itemName);
+    if (itemName !== '') {
 
-    $('#publishModal').modal('hide');
-}
+        $('#publishModal').modal('hide');
 
-function publishItem(itemID, fileType, itemName) {
+        toastr.clear();
+        toastr.info('Processando publicação...', 'Aguarde', {
+            timeOut: 0, 
+            extendedTimeOut: 0
+        });
 
-    toastr.clear();
-    toastr.info('Processando publicação...', 'Aguarde', {
-        timeOut: 0, 
-        extendedTimeOut: 0
-    });
+        require(['esri/request'], function(esriRequest) {
 
-    require(['esri/request'], function(esriRequest) {
+            var data = new FormData();
+            var publishParameters = {
+                name: itemName,
+                title: itemName
+            };
 
-        var data = new FormData();
-        var publishParameters = {
-            name: itemName,
-            title: itemName
-        };
+            data.append('itemid', itemID);
+            data.append('filetype', fileType);
+            data.append('publishParameters', JSON.stringify(publishParameters));
+            data.append('f', 'json');
 
-        data.append('itemid', itemID);
-        data.append('filetype', fileType);
-        data.append('publishParameters', JSON.stringify(publishParameters));
-        data.append('f', 'json');
+            var options = {
+                body: data
+            };
 
-        var options = {
-            body: data
-        };
+            esriRequest(app.portal + '/sharing/rest/content/users/publish', options).then(function() {
+                // TODO
+            }).catch(() => {
+                
+                var username = document.getElementById('dijit_form_ValidationTextBox_0').value;
+                var userContent = document.getElementById('user');
 
-        esriRequest(app.portal + '/sharing/rest/content/users/publish', options).then(function() {
-            // TODO
-        }).catch(() => {
-            
-            var username = document.getElementById('dijit_form_ValidationTextBox_0').value;
-            var userContent = document.getElementById('user');
+                userContent.innerHTML = username;
 
-            userContent.innerHTML = username;
+                esriRequest(app.portal + '/sharing/rest/content/users/' + username + '/publish', options).then(function(response) {
 
-            esriRequest(app.portal + '/sharing/rest/content/users/' + username + '/publish', options).then(function(response) {
+                    toastr.clear();
 
-                toastr.clear();
+                    var error = response.data.services[0].error;
 
-                var error = response.data.services[0].error;
+                    if (error) {
+                        logError(error);
+                    }
+                    else {
 
-                if (error) {
-                    logError(error);
-                }
-                else {
+                        var id = response.data.services[0].serviceItemId;
+                        
+                        toastr.success('Clique para acessar', 'Item publicado!', {
+                            timeOut: 0, 
+                            extendedTimeOut: 0,
+                            onclick: function () {
+                                window.open(app.portal + '/home/item.html?id=' + id, '_blank');
+                            }
+                        });
+                    }
 
-                    var id = response.data.services[0].serviceItemId;
-                    
-                    toastr.success('Clique para acessar', 'Item publicado!', {
-                        timeOut: 0, 
-                        extendedTimeOut: 0,
-                        onclick: function () {
-                            window.open(app.portal + '/home/item.html?id=' + id, '_blank');
-                        }
-                    });
-                }
-
-            }).catch((e) => {
-                logError(e);
+                }).catch((e) => {
+                    logError(e);
+                });
             });
         });
-    });
+    }
 }
 
 function disabledView() {
@@ -998,7 +997,7 @@ function disabledUrl() {
 
     var target = this;
     var rowData = app.table.row(target).data();
-    var url = rowData[4];
+    var url = rowData[1];
 
     if (url) {
         return false;

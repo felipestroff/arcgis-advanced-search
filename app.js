@@ -492,12 +492,10 @@ function createDataTable(columns, data) {
         var row = table.row(tr);
  
         if (row.child.isShown()) {
-            // This row is already open - close it
             row.child.hide();
             tr.removeClass('shown');
         }
         else {
-            // Open this row
             row.child(format(row.data())).show();
             tr.addClass('shown');
         }
@@ -508,7 +506,7 @@ function createDataTable(columns, data) {
 
 function format(data) {
 
-    var description = data[5];
+    var description = data[5] ? data[5] : 'Uma descrição detalhada do item não está disponível.';
     var owner = data[6];
     var tags = data[7];
     var tagsContent = [];
@@ -600,6 +598,12 @@ function createContextMenu() {
                     }
                 },
                 disabled: disabledDownload
+            }
+        },
+        events: {
+            preShow: function(options) {
+
+                console.log(options);
             }
         }
     });

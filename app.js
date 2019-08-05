@@ -18,9 +18,12 @@ var app = {
 
 // Read config.json
 $.getJSON('config.json', function(data) {
+
     $('title').html(data.name);
     $('#group').html(data.name);
     $('#version').html('v' + data.version);
+    $('#version').attr('href', 'https://gitlab.com/fstroff/arcgis-portal-search/tree/v' + data.version);
+    $('#version').attr('target', '_blank');
 });
 
 $(document).ready(function() {
@@ -30,9 +33,12 @@ $(document).ready(function() {
         backdrop: 'static', 
         keyboard: false
     });
+
     // Update then to responsive
     $('#modal').modal('handleUpdate');
     $('#groupModal').modal('handleUpdate');
+    $('#userModal').modal('handleUpdate');
+    $('#itemModal').modal('handleUpdate');
     $('#publishModal').modal('handleUpdate');
     $('#previewModal').modal('handleUpdate');
 
@@ -63,8 +69,11 @@ function search(e) {
                 searchGroupByName(query);
             }
         }
-        else {
+        else if (app.type === 'content') {
             searchContent(query);
+        }
+        else {
+            searchUser(query);
         }
     }
 }
@@ -109,12 +118,19 @@ function setSearchType(type) {
 
         $('#filters').show(500);
     }
-    else {
+    else if (type.value === 'content') {
 
         document.getElementById('groupID').removeAttribute('required');
 
         $('#types .alert').show(500);
 
+        $('#filters').hide(500);
+    }
+    else {
+
+        document.getElementById('groupID').removeAttribute('required');
+
+        $('#types .alert').hide(500);
         $('#filters').hide(500);
     }
 }
@@ -261,11 +277,6 @@ function searchGroupByName(name) {
 
                 toastr.clear();
 
-                $('#groupModal').modal({
-                    backdrop: 'static', 
-                    keyboard: false
-                });
-
                 groups.forEach(function(group, i) {
 
                     $('#groupModal .modal-body').append(
@@ -276,8 +287,6 @@ function searchGroupByName(name) {
                     );
 
                     $('#groupSelect_' + i).click(function() {
-
-                        $('#groupModal').modal('hide');
 
                         esriRequest(app.portal + '/sharing/rest/content/groups/' + group.id, options).then(function (response) {
 
@@ -311,7 +320,14 @@ function searchGroupByName(name) {
                         }).catch((e) => {
                             logError(e);
                         });
+
+                        $('#groupModal').modal('hide');
                     });
+                });
+
+                $('#groupModal').modal({
+                    backdrop: 'static', 
+                    keyboard: false
                 });
             }
             else {
@@ -370,6 +386,190 @@ function searchContent(query) {
                 $('#loader').hide();
 
                 toastr.success('', itens.length + ' itens encontrados');
+            }
+            else {
+                logInfo('Nenhum resultado obtido', true);
+            }
+        }).catch((e) => {
+            logError(e, true);
+        });
+    });
+}
+
+function searchUser(query) {
+
+    require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
+
+        var server = app.url.replace(/^https?\:\/\//i, '');
+        var groupContent = document.getElementById('group');
+        var userContent = document.getElementById('user');
+
+        esriConfig.request.trustedServers.push(server);
+        esriConfig.portalUrl = app.portal;
+
+        app.query = query;
+
+        groupContent.innerHTML = query + ' (' + app.portal + ')';
+        groupContent.href = app.portal;
+        groupContent.target = '_blank';
+
+        $('#modal').modal('hide');
+        $('#loader').show();
+
+        var options = {
+            query: {
+                f: 'pjson',
+                q: query,
+                sortField: 'modified',
+                sortOrder: 'desc',
+                num: 100
+            }
+        };
+
+        esriRequest(app.portal + '/sharing/rest/community/users', options).then(function (result) {
+
+            if (result.data.results.length) {
+
+                var username = document.getElementById('dijit_form_ValidationTextBox_0').value;
+                var users = result.data.results;
+
+                if (username !== '') {
+
+                    var data = new FormData();
+                    var password = document.getElementById('dijit_form_ValidationTextBox_1').value;
+
+                    data.append('username', username);
+                    data.append('password', password);
+                    data.append('client', 'requestip');
+                    data.append('f', 'json');
+
+                    options = {
+                        query: {
+                            f: 'pjson',
+                        },
+                        body: data
+                    };
+
+                    generateToken(username, password);
+
+                    userContent.innerHTML = username;
+                }
+                else {
+                    userContent.innerHTML = 'Anônimo';
+                }     
+
+                options = {
+                    query: {
+                        f: 'pjson',
+                    }
+                };
+
+                toastr.clear();
+
+                users.forEach(function(user, i) {
+
+                    $('#userModal .modal-body').append(
+                        '<div class="custom-control custom-radio custom-control-inline">' +
+                            '<input class="custom-control-input" type="radio" name="userSelect" id="userSelect_' + i + '" value="' + user.id + '">' +
+                            '<label class="custom-control-label" for="userSelect_' + i + '">' + user.fullName + ' (<a href="' + app.portal + '/home/user.html?user=' + user.username + '" target="_blank">' + user.username + '</a>)</label>' + 
+                        '</div>'
+                    );
+
+                    $('#userSelect_' + i).click(function() {
+
+                        esriRequest(app.portal + '/sharing/rest/content/users/' + user.username, options).then(function (response) {
+                            
+                            $('.navbar-nav').show();
+
+                            var itens = response.data.items;
+                            var folders = response.data.folders;
+
+                            if (itens.length + folders.length) {
+                            
+                                if (itens.length) {
+
+                                    $('#itemModal .modal-body').append(
+                                        '<div class="custom-control custom-radio custom-control-inline">' +
+                                            '<input class="custom-control-input" type="radio" name="itemSelect" id="itemSelect">' +
+                                            '<label class="custom-control-label" for="itemSelect">Itens</label>' + 
+                                        '</div>'
+                                    );
+
+                                    $('#itemSelect').click(function() {
+
+                                        createItens(itens);
+        
+                                        $('#loader').hide();
+                                        $('#itemModal').modal('hide');
+                        
+                                        toastr.clear();
+                                        toastr.success('', itens.length + ' itens encontrados');
+                                    });
+                                }
+                                
+                                if (folders.length) {
+
+                                    $('#itemModal .modal-body').append(
+                                        '<fieldset>' +
+                                            '<legend class="text-center">Pastas</legend>' +
+                                        '</fieldset>'
+                                    );
+
+                                    folders.forEach(function(folder, i) {
+
+                                        $('#itemModal .modal-body fieldset').append(
+                                            '<div class="custom-control custom-radio custom-control-inline">' +
+                                                '<input class="custom-control-input" type="radio" name="folderSelect" id="folderSelect_' + i + '" value="' + folder.id + '">' +
+                                                '<label class="custom-control-label" for="folderSelect_' + i + '">' + folder.title + '</label>' + 
+                                            '</div>'
+                                        );
+
+                                        $('#folderSelect_' + i).click(function() {
+
+                                            esriRequest(app.portal + '/sharing/rest/content/users/' + user.username + '/' + folder.id, options).then(function (response) {
+
+                                                itens = response.data.items;
+
+                                                if (itens.length) {
+
+                                                    createItens(itens);
+        
+                                                    $('#loader').hide();
+                                                    $('#itemModal').modal('hide');
+                                    
+                                                    toastr.clear();
+                                                    toastr.success('', itens.length + ' itens encontrados');
+                                                }
+                                                else {
+                                                    logInfo('Nenhum resultado obtido');
+                                                }
+                                            }).catch((e) => {
+                                                logError(e);
+                                            });
+                                        });
+                                    });
+                                }
+
+                                $('#userModal').modal('hide');
+                                $('#itemModal').modal({
+                                    backdrop: 'static', 
+                                    keyboard: false
+                                });
+                            }
+                            else {
+                                logInfo('Nenhum resultado obtido');
+                            }
+
+                        }).catch((e) => {
+                            logError(e);
+                        });
+                    });
+                });
+
+                $('#userModal').modal({
+                    backdrop: 'static', 
+                    keyboard: false
+                });
             }
             else {
                 logInfo('Nenhum resultado obtido', true);
@@ -613,6 +813,8 @@ function createContextMenu() {
             }
         }
     });
+
+    contextMenu
 
     return contextMenu;
 }
@@ -1035,6 +1237,8 @@ function disabledPublish() {
     var type = rowData[4];
 
     switch(type) {
+        case 'CSV':
+        case 'GeoJson':
         case 'Shapefile':
             return false;
         default:

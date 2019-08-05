@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-br">
     <head>
-        <meta charset="UTF-8">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title></title>
         <!-- Styles -->
         <link rel="stylesheet" href="styles/bootstrap.css">
@@ -40,7 +41,7 @@
                         </div>
                     </li>
                 </ul>
-                <span id="version" class="navbar-text"></span>
+                <a id="version" class="navbar-text"></a>
             </div>
         </nav>
 
@@ -49,7 +50,7 @@
                 
                 <!-- Data Table -->
                 <div class="table-responsive">
-                    <table id="table" class="table table-bordered table-striped"></table>
+                    <table id="table" class="table table-bordered table-striped table-hover"></table>
                 </div>
 
                 <!-- Search Modal -->
@@ -83,6 +84,12 @@
                                                 <input class="custom-control-input" type="radio" name="type" id="groups" value="groups" onclick="setSearchType(this);" required>
                                                 <label class="custom-control-label" for="groups">
                                                     Grupo
+                                                </label>
+                                            </div>
+                                            <div class="custom-control custom-radio custom-control-inline">
+                                                <input class="custom-control-input" type="radio" name="type" id="users" value="users" onclick="setSearchType(this);" required>
+                                                <label class="custom-control-label" for="users">
+                                                    Usuário
                                                 </label>
                                             </div>
                                             <div class="custom-control custom-radio custom-control-inline">
@@ -143,6 +150,47 @@
                     </div>
                 </div>
 
+                <!-- User Select Modal -->
+                <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Selecionar Usuário</h5>
+                            </div>
+                            <div class="modal-body"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item Select Modal -->
+                <div class="modal fade" id="itemModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Selecionar Itens</h5>
+                            </div>
+                            <div class="modal-body"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Preview Modal -->
+                <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-xl" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"></h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="viewDiv"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Publish Modal -->
                 <div class="modal fade" id="publishModal" tabindex="-1" role="dialog" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -169,23 +217,6 @@
                                     <button type="submit" class="btn btn-success">Publicar</button>
                                 </div>
                             </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Map Preview Modal -->
-                <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-hidden="true">
-                    <div class="modal-dialog modal-xl" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title"></h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="viewDiv"></div>
-                            </div>
                         </div>
                     </div>
                 </div>

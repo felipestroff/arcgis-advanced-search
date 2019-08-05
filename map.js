@@ -7,7 +7,7 @@ require(['esri/Map','esri/views/MapView', 'esri/widgets/Home'], function(Map, Ma
     app.view = new MapView({
         container: 'viewDiv',
         map: app.map,
-        zoom: 2
+        zoom: 1
     });
 
     var homeBtn = new Home({

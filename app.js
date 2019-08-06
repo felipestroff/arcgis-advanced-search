@@ -115,7 +115,6 @@ function setSearchType(type) {
         document.getElementById('groupID').setAttribute('required', true);
 
         $('#types .alert').hide(500);
-
         $('#filters').show(500);
     }
     else if (type.value === 'content') {
@@ -123,7 +122,6 @@ function setSearchType(type) {
         document.getElementById('groupID').removeAttribute('required');
 
         $('#types .alert').show(500);
-
         $('#filters').hide(500);
     }
     else {
@@ -290,6 +288,8 @@ function searchGroupByName(name) {
 
                         esriRequest(app.portal + '/sharing/rest/content/groups/' + group.id, options).then(function (response) {
 
+                            var itens = response.data.items;
+
                             groupContent.innerHTML = group.title + ' (' + app.portal + ')';
                             groupContent.href = app.portal;
                             groupContent.target = '_blank';
@@ -299,29 +299,25 @@ function searchGroupByName(name) {
                                 navContent.style.backgroundImage = 'url(' + app.portal + '/sharing/rest/community/groups/' + group.id + '/info/' + group.thumbnail + ')';
                                 groupContent.style.paddingLeft = '50px';
                             }
-        
+
                             $('.navbar-nav').show();
 
-                            var itens = response.data.items;
-
                             if (itens.length) {
-
-                                toastr.clear();
 
                                 createItens(itens);
 
                                 $('#loader').hide();
+                                $('#groupModal').modal('hide');
 
+                                toastr.clear();
                                 toastr.success('', itens.length + ' itens encontrados');
                             }
                             else {
-                                logInfo('Nenhum resultado obtido', true);
+                                logInfo('Nenhum resultado obtido');
                             }
                         }).catch((e) => {
                             logError(e);
                         });
-
-                        $('#groupModal').modal('hide');
                     });
                 });
 
@@ -430,7 +426,8 @@ function searchUser(query) {
 
             if (result.data.results.length) {
 
-                var username = document.getElementById('dijit_form_ValidationTextBox_0').value;
+                var usernameInput = document.getElementById('dijit_form_ValidationTextBox_0');
+                var username = usernameInput ? usernameInput.value : '';
                 var users = result.data.results;
 
                 if (username !== '') {
@@ -455,16 +452,15 @@ function searchUser(query) {
                     userContent.innerHTML = username;
                 }
                 else {
+
+                    options = {
+                        query: {
+                            f: 'pjson',
+                        }
+                    };
+
                     userContent.innerHTML = 'Anônimo';
                 }     
-
-                options = {
-                    query: {
-                        f: 'pjson',
-                    }
-                };
-
-                toastr.clear();
 
                 users.forEach(function(user, i) {
 
@@ -476,6 +472,8 @@ function searchUser(query) {
                     );
 
                     $('#userSelect_' + i).click(function() {
+
+                        $('#userModal').modal('hide');
 
                         esriRequest(app.portal + '/sharing/rest/content/users/' + user.username, options).then(function (response) {
                             
@@ -549,15 +547,21 @@ function searchUser(query) {
                                         });
                                     });
                                 }
-
-                                $('#userModal').modal('hide');
+                                
                                 $('#itemModal').modal({
                                     backdrop: 'static', 
                                     keyboard: false
                                 });
                             }
                             else {
+
                                 logInfo('Nenhum resultado obtido');
+
+                                setTimeout(function() { 
+
+                                    $('#userModal').modal('show');
+                        
+                                }, 500);
                             }
 
                         }).catch((e) => {
@@ -582,6 +586,7 @@ function searchUser(query) {
 
 function createItens(itens) {
 
+    var data = [];
     var columns = [
         // ID
         {
@@ -630,7 +635,6 @@ function createItens(itens) {
             defaultContent: ''
         }
     ];
-    var data = [];
 
     itens.forEach(function(item) {
 
@@ -639,7 +643,13 @@ function createItens(itens) {
         var thumbnail;
 
         if (item.thumbnail) {
-            thumbnail = '<img src="' + app.portal + '/sharing/rest/content/items/' + item.id + '/info/' + item.thumbnail + '" class="img-thumbnail img-item">';
+
+            if (app.token) {
+                thumbnail = '<img src="' + app.portal + '/sharing/rest/content/items/' + item.id + '/info/' + item.thumbnail + '?token=' + app.token + '" class="img-thumbnail img-item">';
+            }
+            else {
+                thumbnail = '<img src="' + app.portal + '/sharing/rest/content/items/' + item.id + '/info/' + item.thumbnail + '" class="img-thumbnail img-item">';
+            }
         }
         else {
             thumbnail = '<img src="images/default_thumb.jpg" class="img-thumbnail img-item">';

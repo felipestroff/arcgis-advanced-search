@@ -607,19 +607,19 @@ function createItens(itens) {
         },
         // Thumbnail
         {
-            className: 'text-center vertical-align-middle width-10',
+            className: 'text-center vertical-align-middle width-5',
             searchable: false,
             orderable: false
         },
         // Title
         {
             title: 'Nome',
-            className: 'vertical-align-middle'
+            className: 'vertical-align-middle width-75'
         },
         // Type
         {
             title: 'Tipo',
-            className: 'text-center vertical-align-middle',
+            className: 'text-center vertical-align-middle width-15',
         },
         // Description
         {
@@ -635,7 +635,7 @@ function createItens(itens) {
         },
         // Action
         {
-            className: 'details-control',
+            className: 'details-control width-5',
             orderable: false,
             data: null,
             defaultContent: ''

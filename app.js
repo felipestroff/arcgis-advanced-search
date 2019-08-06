@@ -609,7 +609,8 @@ function createItens(itens) {
         },
         // Title
         {
-            title: 'Nome'
+            title: 'Nome',
+            className: 'vertical-align-middle'
         },
         // Type
         {
@@ -840,7 +841,9 @@ function downloadCSV(e) {
     e.preventDefault();
 
     var chks = document.getElementsByClassName('attr-checkbox');
-    var data = [];
+    var data = [
+        ['ID', 'Nome', 'Tipo', 'Proprietário(a)', 'URL']
+    ];
 
     app.csvData.map(function(attr) {
 

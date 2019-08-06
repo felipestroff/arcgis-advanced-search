@@ -671,6 +671,7 @@ function createItens(itens) {
         downloadedRows.push(item.title);
         downloadedRows.push(item.type);
         downloadedRows.push(item.owner);
+        downloadedRows.push(item.url);
 
         app.csvData.push(downloadedRows);
     });

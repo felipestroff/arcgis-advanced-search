@@ -198,7 +198,7 @@ function searchGroupById(id) {
                 userContent.innerHTML = 'Anônimo';
             }
 
-            groupContent.innerHTML = group.data.title + ' (' + app.portal + ')';
+            groupContent.innerHTML = '<i class="fas fa-search"></i> ' + group.data.title + ' (' + app.portal + ')';
             groupContent.href = app.portal;
             groupContent.target = '_blank';
 
@@ -264,6 +264,8 @@ function searchGroupByName(name) {
 
         esriRequest(app.portal + '/sharing/rest/community/groups', options).then(function (result) {
 
+            $('#loader').hide();
+
             if (result.data.results.length) {
 
                 var groups = result.data.results;
@@ -287,11 +289,14 @@ function searchGroupByName(name) {
 
                     $('#groupSelect_' + i).click(function() {
 
+                        $('#groupModal').modal('hide');
+                        $('#loader').show();
+
                         esriRequest(app.portal + '/sharing/rest/content/groups/' + group.id, options).then(function (response) {
 
                             var itens = response.data.items;
 
-                            groupContent.innerHTML = group.title + ' (' + app.portal + ')';
+                            groupContent.innerHTML = '<i class="fas fa-search"></i> ' + group.title + ' (' + app.portal + ')';
                             groupContent.href = app.portal;
                             groupContent.target = '_blank';
                             userContent.innerHTML = 'Anônimo';
@@ -303,19 +308,13 @@ function searchGroupByName(name) {
 
                             $('.navbar-nav').show();
 
-                            if (itens.length) {
+                            createItens(itens);
 
-                                createItens(itens);
+                            $('#loader').hide();
 
-                                $('#loader').hide();
-                                $('#groupModal').modal('hide');
+                            toastr.clear();
+                            toastr.success('', itens.length + ' itens encontrados');
 
-                                toastr.clear();
-                                toastr.success('', itens.length + ' itens encontrados');
-                            }
-                            else {
-                                logInfo('Nenhum resultado obtido');
-                            }
                         }).catch((e) => {
                             logError(e);
                         });
@@ -349,7 +348,7 @@ function searchContent(query) {
 
         app.query = query;
 
-        groupContent.innerHTML = query + ' (' + app.portal + ')';
+        groupContent.innerHTML = '<i class="fas fa-search"></i> ' + query + ' (' + app.portal + ')';
         groupContent.href = app.portal;
         groupContent.target = '_blank';
 
@@ -406,7 +405,7 @@ function searchUser(query) {
 
         app.query = query;
 
-        groupContent.innerHTML = query + ' (' + app.portal + ')';
+        groupContent.innerHTML = '<i class="fas fa-search"></i> ' + query + ' (' + app.portal + ')';
         groupContent.href = app.portal;
         groupContent.target = '_blank';
 
@@ -424,6 +423,8 @@ function searchUser(query) {
         };
 
         esriRequest(app.portal + '/sharing/rest/community/users', options).then(function (result) {
+
+            $('#loader').hide();
 
             if (result.data.results.length) {
 
@@ -475,9 +476,11 @@ function searchUser(query) {
                     $('#userSelect_' + i).click(function() {
 
                         $('#userModal').modal('hide');
+                        $('#loader').show();
 
                         esriRequest(app.portal + '/sharing/rest/content/users/' + user.username, options).then(function (response) {
                             
+                            $('#loader').hide();
                             $('.navbar-nav').show();
 
                             var itens = response.data.items;
@@ -498,7 +501,6 @@ function searchUser(query) {
 
                                         createItens(itens);
         
-                                        $('#loader').hide();
                                         $('#itemModal').modal('hide');
                         
                                         toastr.clear();
@@ -525,6 +527,9 @@ function searchUser(query) {
 
                                         $('#folderSelect_' + i).click(function() {
 
+                                            $('#itemModal').modal('hide');
+                                            $('#loader').show();
+
                                             esriRequest(app.portal + '/sharing/rest/content/users/' + user.username + '/' + folder.id, options).then(function (response) {
 
                                                 itens = response.data.items;
@@ -534,7 +539,6 @@ function searchUser(query) {
                                                     createItens(itens);
         
                                                     $('#loader').hide();
-                                                    $('#itemModal').modal('hide');
                                     
                                                     toastr.clear();
                                                     toastr.success('', itens.length + ' itens encontrados');
@@ -840,7 +844,7 @@ function downloadCSV(e) {
 
     e.preventDefault();
 
-    var chks = document.getElementsByClassName('attr-checkbox');
+    var chks = document.getElementsByClassName('col-checkbox');
     var data = [
         ['ID', 'Nome', 'Tipo', 'Proprietário(a)', 'URL']
     ];

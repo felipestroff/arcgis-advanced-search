@@ -6,8 +6,8 @@
 #navigation {
     background-repeat: no-repeat;
     background-position-x: 3px;
-    background-position-y: 3px;
-    background-size: 50px;
+    background-position-y: 5px;
+    background-size: 46px;
 }
 
 #table, .table-hidden {
@@ -37,7 +37,11 @@
     position: fixed;
     top: calc(50% - 100px);
     left: 50%;
-    z-index: 100;
+    z-index: 1051;
+}
+
+#dijit_Dialog_0 {
+    z-index: 1052 !important;
 }
 
 .padding-trailer-3 {

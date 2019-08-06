@@ -30,15 +30,20 @@
             <div id="menu" class="collapse navbar-collapse">
                 <ul class="navbar-nav mr-auto" style="display: none !important;">
                     <li class="nav-item dropdown active">
-                        <a id="user" class="nav-link dropdown-toggle" href="#" id="dropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                        <a class="nav-link dropdown-toggle" href="#" id="dropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="user"></span>
+                        </a>
                         <div class="dropdown-menu" aria-labelledby="dropdown">
-                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#downloadModal">
-                                <i class="fas fa-file-download"></i> Baixar lista de itens
-                            </a>
                             <a class="dropdown-item" href="">
                                 <i class="fas fa-power-off"></i> Sair
                             </a>
                         </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-toggle="modal" data-target="#downloadModal">
+                            <i class="fas fa-file-download"></i> Download
+                        </a>
                     </li>
                 </ul>
                 <a id="version" class="navbar-text"></a>
@@ -234,23 +239,23 @@
                                 </div>
                                 <div class="modal-body">
                                     <div class="custom-control custom-checkbox custom-control-inline">
-                                        <input class="custom-control-input attr-checkbox" type="checkbox" id="colId">
+                                        <input class="custom-control-input col-checkbox" type="checkbox" id="colId">
                                         <label class="custom-control-label" for="colId">ID</label>
                                     </div>
                                     <div class="custom-control custom-checkbox custom-control-inline">
-                                        <input class="custom-control-input attr-checkbox" type="checkbox" id="colName">
+                                        <input class="custom-control-input col-checkbox" type="checkbox" id="colName">
                                         <label class="custom-control-label" for="colName">Nome</label>
                                     </div>
                                     <div class="custom-control custom-checkbox custom-control-inline">
-                                        <input class="custom-control-input attr-checkbox" type="checkbox" id="colType">
+                                        <input class="custom-control-input col-checkbox" type="checkbox" id="colType">
                                         <label class="custom-control-label" for="colType">Tipo</label>
                                     </div>
                                     <div class="custom-control custom-checkbox custom-control-inline">
-                                        <input class="custom-control-input attr-checkbox" type="checkbox" id="colOwner">
+                                        <input class="custom-control-input col-checkbox" type="checkbox" id="colOwner">
                                         <label class="custom-control-label" for="colOwner">Proprietário(a)</label>
                                     </div>
                                     <div class="custom-control custom-checkbox custom-control-inline">
-                                        <input class="custom-control-input attr-checkbox" type="checkbox" id="colUrl">
+                                        <input class="custom-control-input col-checkbox" type="checkbox" id="colUrl">
                                         <label class="custom-control-label" for="colUrl">URL</label>
                                     </div>
                                 </div>

@@ -34,13 +34,14 @@ $(document).ready(function() {
         keyboard: false
     });
 
-    // Update then to responsive
+    // Update to responsive
     $('#modal').modal('handleUpdate');
     $('#groupModal').modal('handleUpdate');
     $('#userModal').modal('handleUpdate');
     $('#itemModal').modal('handleUpdate');
     $('#publishModal').modal('handleUpdate');
     $('#previewModal').modal('handleUpdate');
+    $('#downloadModal').modal('handleUpdate');
 
     // Init Bootstrap tooltip
     $('body').tooltip({selector: '[data-toggle="tooltip"]'});
@@ -666,7 +667,11 @@ function createItens(itens) {
 
         data.push(rows);
 
+        downloadedRows.push(item.id);
         downloadedRows.push(item.title);
+        downloadedRows.push(item.type);
+        downloadedRows.push(item.owner);
+
         app.csvData.push(downloadedRows);
     });
 
@@ -829,9 +834,28 @@ function createContextMenu() {
     return contextMenu;
 }
 
-function downloadCSV() {
+function downloadCSV(e) {
 
-    var csvContent = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURI(app.csvData.map(e => e.join(';')).join('\n'));
+    e.preventDefault();
+
+    var chks = document.getElementsByClassName('attr-checkbox');
+    var data = [];
+
+    app.csvData.map(function(attr) {
+
+        var rows = [];
+
+        for (var i = 0; chks[i]; ++i) {
+
+            if (chks[i].checked) {
+
+                rows.push(attr[i])
+                data.push(rows);
+            }
+        }
+    });
+
+    var csvContent = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURI(data.map(e => e.join(';')).join('\n'));
     var link = document.createElement('a');
 
     link.setAttribute('href', csvContent);

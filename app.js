@@ -810,13 +810,18 @@ function createContextMenu() {
                 disabled: disabledPublish
             },
             'download': {
-                name: 'Baixar',
+                name: 'Download',
                 icon: 'fas fa-cloud-download-alt',
                 items: {
                     'geojson': {
                         name: 'GeoJSON',
                         icon: 'fas fa-globe',
                         disabled: disabledGeojson
+                    },
+                    'kml': {
+                        name: 'KML',
+                        icon: 'fas fa-globe',
+                        disabled: disabledKml
                     },
                     'file': {
                         name: 'Arquivo',
@@ -1077,7 +1082,7 @@ function contextMenuCallback(key) {
 
         case 'kml':
 
-            extractData(url, 'KML');
+            window.open(url + '/0/query?where=1=1&outFields=*&f=kmz', '_self');
 
             break;
 
@@ -1296,6 +1301,20 @@ function disabledGeojson() {
 
     switch(type) {
         case 'Feature Service':
+        case 'Map Service':
+            return false;
+        default:
+            return true;
+    }
+}
+
+function disabledKml() {
+
+    var target = this;
+    var rowData = app.table.row(target).data();
+    var type = rowData[4];
+
+    switch(type) {
         case 'Map Service':
             return false;
         default:

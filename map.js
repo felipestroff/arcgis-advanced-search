@@ -87,8 +87,7 @@ function preview(id) {
                 }).catch(function(e) {
                     logError(e);
                 });
-            })
-            .catch(function(e) {
+            }).catch(function(e) {
                 logError(e);
             });
         }).catch(function(e) {

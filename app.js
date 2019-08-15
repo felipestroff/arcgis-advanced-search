@@ -6,6 +6,7 @@ var app = {
     url: '',
     portal: '',
     token: '',
+    start: 0,
     table: null,
     map: null,
     view: null,
@@ -131,18 +132,6 @@ function setSearchType(type) {
 
         $('#types .alert').hide(500);
         $('#filters').hide(500);
-    }
-}
-
-function setSearchFilter(el) {
-
-    app.filter = el.value;
-
-    if (el.value === 'name') {
-        $('#filters .alert').show(500);
-    }
-    else {
-        $('#filters .alert').hide(500);
     }
 }
 
@@ -339,9 +328,9 @@ function searchContent(query) {
 
     require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
 
-        var server = app.url.replace(/^https?\:\/\//i, '');
-        var groupContent = document.getElementById('group');
-        var userContent = document.getElementById('user');
+        var server = app.url.replace(/^https?\:\/\//i, ''),
+            groupContent = document.getElementById('group'),
+            userContent = document.getElementById('user');
 
         esriConfig.request.trustedServers.push(server);
         esriConfig.portalUrl = app.portal;
@@ -373,6 +362,57 @@ function searchContent(query) {
 
             var itens = response.data.results;
 
+            total = response.data.total;
+            app.start = response.data.nextStart;
+
+            if (itens.length) {
+
+                toastr.clear();
+
+                createItens(itens);
+
+                $('#loader').hide();
+
+                if (total > 100) {
+                    $('#paginateBtns').show();
+                }
+
+                toastr.success('', itens.length + ' itens encontrados de ' + total);
+            }
+            else {
+                logInfo('Nenhum resultado obtido', true);
+            }
+        }).catch((e) => {
+            logError(e, true);
+        });
+    });
+}
+
+function paginateContent() {
+
+    require(['esri/request', 'esri/config'], function (esriRequest) {
+
+        $('#table').DataTable().destroy();
+        $('#table').empty();
+        $('#loader').show();
+
+        var options = {
+            query: {
+                f: 'pjson',
+                q: app.query,
+                sortField: 'modified',
+                sortOrder: 'desc',
+                num: 100,
+                start: app.start
+            }
+        };
+
+        esriRequest(app.portal + '/sharing/rest/search', options).then(function (response) {
+
+            var itens = response.data.results;
+
+            app.start = response.data.nextStart;
+
             if (itens.length) {
 
                 toastr.clear();
@@ -384,10 +424,8 @@ function searchContent(query) {
                 toastr.success('', itens.length + ' itens encontrados');
             }
             else {
-                logInfo('Nenhum resultado obtido', true);
+                logInfo('Nenhum resultado obtido');
             }
-        }).catch((e) => {
-            logError(e, true);
         });
     });
 }
@@ -705,7 +743,9 @@ function createDataTable(columns, data) {
         },
         'order': [],
         'columns': columns,
-        'data': data
+        'data': data,
+        responsive: true,
+        autoWidth: true,
     });
 
     $('#table tbody').on('click', 'td.details-control', function() {
@@ -1353,6 +1393,7 @@ function disabledFile() {
         case 'Layout':
         case 'Locator Package':
         case 'Map Package':
+        case 'Map Template':
         case 'Microsoft Excel':
         case 'Microsoft Powerpoint':
         case 'Microsoft Word':
@@ -1415,6 +1456,7 @@ function disabledDownload() {
         case 'KML Collection':
         case 'Map Package':
         case 'Map Service':
+        case 'Map Template':
         case 'Microsoft Excel':
         case 'Microsoft Powerpoint':
         case 'Microsoft Word':

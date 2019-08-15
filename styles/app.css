@@ -119,6 +119,10 @@
     padding-top: 4rem;
 }
 
+.loader-text::after {
+    content: 'Carregando...';
+}
+
 #modal .alert {
     display: none;
     margin-top: 10px;
@@ -173,4 +177,8 @@ tr.shown td.details-control {
 .context-menu-active {
     color: #004085 !important;
     background-color: #b8daff !important;
+}
+
+#paginateBtns {
+    display: none;
 }

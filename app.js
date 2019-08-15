@@ -42,7 +42,6 @@ $(document).ready(function() {
     $('#itemModal').modal('handleUpdate');
     $('#publishModal').modal('handleUpdate');
     $('#previewModal').modal('handleUpdate');
-    $('#downloadModal').modal('handleUpdate');
 
     // Init Bootstrap tooltip
     $('body').tooltip({selector: '[data-toggle="tooltip"]'});
@@ -680,6 +679,8 @@ function createItens(itens) {
         }
     ];
 
+    app.csvData = [];
+
     itens.forEach(function(item) {
 
         var rows = [];
@@ -885,27 +886,14 @@ function createContextMenu() {
     return contextMenu;
 }
 
-function downloadCSV(e) {
+function downloadCSV() {
 
-    e.preventDefault();
-
-    var chks = document.getElementsByClassName('col-checkbox');
     var data = [
         ['ID', 'Nome', 'Tipo', 'Proprietário(a)', 'URL']
     ];
 
-    app.csvData.map(function(attr) {
-
-        var rows = [];
-
-        for (var i = 0; chks[i]; ++i) {
-
-            if (chks[i].checked) {
-
-                rows.push(attr[i])
-                data.push(rows);
-            }
-        }
+    app.csvData.map(function(item) {
+        data.push(item);
     });
 
     var csvContent = 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURI(data.map(e => e.join(';')).join('\n'));

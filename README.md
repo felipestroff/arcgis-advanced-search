@@ -1,1 +1,1 @@
-# ArcGIS Portal Search v0.5
+# ArcGIS Portal Search v0.6

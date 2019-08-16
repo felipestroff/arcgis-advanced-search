@@ -67,12 +67,12 @@
                 <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
-                            <form onsubmit="search(event);">
+                            <form id="formSearch" onsubmit="search(event);">
                                 <div class="modal-header">
                                     <h5 class="modal-title">ArcGIS REST API</h5>
                                 </div>
                                 <div class="modal-body">
-                                    <div class="form-group text-center">
+                                    <div class="form-group">
                                         <fieldset>
                                             <legend class="text-center">Local</legend>
                                             <input id="urlInput" type="url" list="urlSelect" placeholder="Selecione ou digite uma URL válida" class="form-control form-control-lg" required>
@@ -138,6 +138,7 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('formSearch').reset();">Limpar</button>
                                     <button type="submit" class="btn btn-primary">Continuar</button>
                                 </div>
                             </form>

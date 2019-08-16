@@ -70,11 +70,11 @@ function search(e) {
                 searchGroupByName(query);
             }
         }
+        else if (app.type === 'users') {
+            searchUser(query);
+        }
         else if (app.type === 'content') {
             searchContent(query);
-        }
-        else {
-            searchUser(query);
         }
     }
 }
@@ -111,26 +111,15 @@ function setSearchType(type) {
 
     app.type = type.value;
 
+    document.getElementById('groupID').removeAttribute('required');
+
+    $('#filters').hide(500);
+
     if (type.value === 'groups') {
 
         document.getElementById('groupID').setAttribute('required', true);
 
-        $('#types .alert').hide(500);
         $('#filters').show(500);
-    }
-    else if (type.value === 'content') {
-
-        document.getElementById('groupID').removeAttribute('required');
-
-        $('#types .alert').show(500);
-        $('#filters').hide(500);
-    }
-    else {
-
-        document.getElementById('groupID').removeAttribute('required');
-
-        $('#types .alert').hide(500);
-        $('#filters').hide(500);
     }
 }
 
@@ -319,112 +308,6 @@ function searchGroupByName(name) {
             }
         }).catch((e) => {    
             logError(e, true);
-        });
-    });
-}
-
-function searchContent(query) {
-
-    require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
-
-        var server = app.url.replace(/^https?\:\/\//i, ''),
-            groupContent = document.getElementById('group'),
-            userContent = document.getElementById('user');
-
-        esriConfig.request.trustedServers.push(server);
-        esriConfig.portalUrl = app.portal;
-
-        app.query = query;
-
-        groupContent.innerHTML = '<i class="fas fa-search"></i> ' + query + ' (' + app.portal + ')';
-        groupContent.href = app.portal;
-        groupContent.target = '_blank';
-
-        userContent.innerHTML = 'Anônimo';
-
-        $('#modal').modal('hide');
-        $('#loader').show();
-
-        var options = {
-            query: {
-                f: 'pjson',
-                q: query,
-                sortField: 'modified',
-                sortOrder: 'desc',
-                num: 100
-            }
-        };
-
-        esriRequest(app.portal + '/sharing/rest/search', options).then(function (response) {
-
-            $('.navbar-nav').show();
-
-            var itens = response.data.results;
-
-            total = response.data.total;
-            app.start = response.data.nextStart;
-
-            if (itens.length) {
-
-                toastr.clear();
-
-                createItens(itens);
-
-                $('#loader').hide();
-
-                if (total > 100) {
-                    $('#paginateBtns').show();
-                }
-
-                toastr.success('', itens.length + ' itens encontrados de ' + total);
-            }
-            else {
-                logInfo('Nenhum resultado obtido', true);
-            }
-        }).catch((e) => {
-            logError(e, true);
-        });
-    });
-}
-
-function paginateContent() {
-
-    require(['esri/request', 'esri/config'], function (esriRequest) {
-
-        $('#table').DataTable().destroy();
-        $('#table').empty();
-        $('#loader').show();
-
-        var options = {
-            query: {
-                f: 'pjson',
-                q: app.query,
-                sortField: 'modified',
-                sortOrder: 'desc',
-                num: 100,
-                start: app.start
-            }
-        };
-
-        esriRequest(app.portal + '/sharing/rest/search', options).then(function (response) {
-
-            var itens = response.data.results;
-
-            app.start = response.data.nextStart;
-
-            if (itens.length) {
-
-                toastr.clear();
-
-                createItens(itens);
-
-                $('#loader').hide();
-
-                toastr.success('', itens.length + ' itens encontrados');
-            }
-            else {
-                logInfo('Nenhum resultado obtido');
-            }
         });
     });
 }
@@ -622,6 +505,112 @@ function searchUser(query) {
             }
         }).catch((e) => {
             logError(e, true);
+        });
+    });
+}
+
+function searchContent(query) {
+
+    require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
+
+        var server = app.url.replace(/^https?\:\/\//i, ''),
+            groupContent = document.getElementById('group'),
+            userContent = document.getElementById('user');
+
+        esriConfig.request.trustedServers.push(server);
+        esriConfig.portalUrl = app.portal;
+
+        app.query = query;
+
+        groupContent.innerHTML = '<i class="fas fa-search"></i> ' + query + ' (' + app.portal + ')';
+        groupContent.href = app.portal;
+        groupContent.target = '_blank';
+
+        userContent.innerHTML = 'Anônimo';
+
+        $('#modal').modal('hide');
+        $('#loader').show();
+
+        var options = {
+            query: {
+                f: 'pjson',
+                q: query,
+                sortField: 'modified',
+                sortOrder: 'desc',
+                num: 100
+            }
+        };
+
+        esriRequest(app.portal + '/sharing/rest/search', options).then(function (response) {
+
+            $('.navbar-nav').show();
+
+            var itens = response.data.results;
+
+            total = response.data.total;
+            app.start = response.data.nextStart;
+
+            if (itens.length) {
+
+                toastr.clear();
+
+                createItens(itens);
+
+                $('#loader').hide();
+
+                if (total > 100) {
+                    $('#paginateBtns').show();
+                }
+
+                toastr.success('', itens.length + ' itens encontrados de ' + total);
+            }
+            else {
+                logInfo('Nenhum resultado obtido', true);
+            }
+        }).catch((e) => {
+            logError(e, true);
+        });
+    });
+}
+
+function paginateContent() {
+
+    require(['esri/request', 'esri/config'], function (esriRequest) {
+
+        $('#table').DataTable().destroy();
+        $('#table').empty();
+        $('#loader').show();
+
+        var options = {
+            query: {
+                f: 'pjson',
+                q: app.query,
+                sortField: 'modified',
+                sortOrder: 'desc',
+                num: 100,
+                start: app.start
+            }
+        };
+
+        esriRequest(app.portal + '/sharing/rest/search', options).then(function (response) {
+
+            var itens = response.data.results;
+
+            app.start = response.data.nextStart;
+
+            if (itens.length) {
+
+                toastr.clear();
+
+                createItens(itens);
+
+                $('#loader').hide();
+
+                toastr.success('', itens.length + ' itens encontrados');
+            }
+            else {
+                logInfo('Nenhum resultado obtido');
+            }
         });
     });
 }

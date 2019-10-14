@@ -1,33 +1,33 @@
 require(['esri/Map','esri/views/MapView', 'esri/widgets/Home'], function(Map, MapView, Home) {
 
-    app.map = new Map({
+    app.api.map = new Map({
         basemap: 'streets'
     });
 
-    app.view = new MapView({
+    app.api.view = new MapView({
         container: 'viewDiv',
-        map: app.map,
+        map: app.api.map,
         zoom: 1
     });
 
     var homeBtn = new Home({
-        view: app.view
+        view: app.api.view
     });
 
-    app.view.ui.add(homeBtn, 'top-left');
+    app.api.view.ui.add(homeBtn, 'top-left');
 
-    app.view.on('layerview-create', function (event) {
+    app.api.view.on('layerview-create', function (event) {
 
         var layer = event.layer;
 
         console.info('[LAYER]: ' + layer.title + ' (' + layer.type + ') loaded');
     });
 
-    app.view.on('layerview-create-error', function (event) {
+    app.api.view.on('layerview-create-error', function (event) {
         logError(e);
     });
 
-    app.view.on('layerview-destroy', function (event) {
+    app.api.view.on('layerview-destroy', function (event) {
 
         var layer = event.layer;
 
@@ -49,13 +49,13 @@ function preview(id) {
 
             console.info('[PORTAL]: ' + portal.url + ' loaded');
 
-            app.map.removeAll();
-            app.view.popup.close();
+            app.api.map.removeAll();
+            app.api.view.popup.close();
 
             loadPortalBasemaps(portal);
 
-            app.view.goTo({
-                target: app.view.center,
+            app.api.view.goTo({
+                target: app.api.view.center,
                 zoom: 2
             });
 
@@ -66,7 +66,7 @@ function preview(id) {
             })
             .then(function(layer) {
 
-                app.map.add(layer);
+                app.api.map.add(layer);
 
                 layer.when(function() {
 
@@ -77,12 +77,12 @@ function preview(id) {
                     }
 
                     // TODO
-                    app.view.goTo(layer.fullExtent);
+                    app.api.view.goTo(layer.fullExtent);
 
                     $('#loader').hide();
 
-                    $('#previewModal .modal-title').html(layer.title);
-                    $('#previewModal').modal();
+                    $('#mapModal .modal-title').html(layer.title);
+                    $('#mapModal').modal();
 
                 }).catch(function(e) {
                     logError(e);
@@ -100,22 +100,22 @@ function loadPortalBasemaps(portal) {
     
     require(['esri/widgets/BasemapGallery', 'esri/widgets/Expand'], function(BasemapGallery, Expand) {
 
-        app.view.ui.remove(app.basemapExpand);
+        app.api.view.ui.remove(app.api.basemapExpand);
 
-        app.basemap = portal.useVectorBasemaps ? portal.defaultVectorBasemap : portal.defaultBasemap;
+        app.api.basemap = portal.useVectorBasemaps ? portal.defaultVectorBasemap : portal.defaultBasemap;
 
-        app.basemapGallery = new BasemapGallery({
-            view: app.view
+        app.api.basemapGallery = new BasemapGallery({
+            view: app.api.view
         });
 
-        app.basemapExpand = new Expand({
-            view: app.view,
-            content: app.basemapGallery
+        app.api.basemapExpand = new Expand({
+            view: app.api.view,
+            content: app.api.basemapGallery
         });
 
-        app.map.basemap = app.basemap;
+        app.api.map.basemap = app.api.basemap;
 
-        app.view.ui.add(app.basemapExpand, 'bottom-left');
+        app.api.view.ui.add(app.api.basemapExpand, 'bottom-left');
     });
 }
 
@@ -123,10 +123,10 @@ function createLayerLegend(layer) {
 
     require(['esri/widgets/Legend'], function(Legend) {
 
-        app.view.ui.remove(app.legend);
+        app.api.view.ui.remove(app.api.legend);
 
-        app.legend = new Legend({
-            view: app.view,
+        app.api.legend = new Legend({
+            view: app.api.view,
             layerInfos: [
                 {
                     layer: layer
@@ -134,7 +134,7 @@ function createLayerLegend(layer) {
             ]
         });
 
-        app.view.ui.add(app.legend, 'bottom-right');
+        app.api.view.ui.add(app.api.legend, 'bottom-right');
     });
 }
 

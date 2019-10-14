@@ -1,50 +1,83 @@
 // Global attributes
-var app = {
-    type: '',
-    filter: '',
-    query: '',
-    url: '',
-    portal: '',
-    token: '',
-    start: 0,
-    table: null,
-    map: null,
-    view: null,
-    basemap: null,
-    basemapGallery: null,
-    basemapExpand: null,
-    legend: null,
-    csvData: []
-};
+var app = new Vue({
+    data: {
+        url: '',
+        portal: '',
+        token: '',
+        search: {
+            type: '',
+            filter: '',
+            query: '',
+            start: 0,
+            table: null,
+            csvData: []
+        },
+        api: {
+            map: null,
+            view: null,
+            basemap: null,
+            basemapGallery: null,
+            basemapExpand: null,
+            legend: null
+        }
+    },
+    beforeCreate() {
+            // Load components
+            new Vue({
+                el: '#components',
+                components: {
+                    'navbar': httpVueLoader('components/navbar.vue'),
+                    'loader': httpVueLoader('components/loader.vue'),
+                    'search': httpVueLoader('components/search.vue'),
+                    'group': httpVueLoader('components/group.vue'),
+                    'user': httpVueLoader('components/user.vue'),
+                    'item': httpVueLoader('components/item.vue'),
+                    'preview': httpVueLoader('components/preview.vue'),
+                    'publish': httpVueLoader('components/publish.vue'),
+                    'paginate': httpVueLoader('components/paginate.vue'),
+                    'datatable': httpVueLoader('components/datatable.vue')
+                }
+            });
+    },
+    created() {
+        // Read config.json
+        $.getJSON('config.json', function(data, status) {
 
-// Read config.json
-$.getJSON('config.json', function(data) {
+            $('title').html(data.name);
+            $('#group').html(data.name);
+            $('#version').html('v' + data.version);
+            $('#version').attr('href', 'https://gitlab.com/fstroff/arcgis-portal-search/tree/v' + data.version);
+            $('#version').attr('target', '_blank');
 
-    $('title').html(data.name);
-    $('#group').html(data.name);
-    $('#version').html('v' + data.version);
-    $('#version').attr('href', 'https://gitlab.com/fstroff/arcgis-portal-search/tree/v' + data.version);
-    $('#version').attr('target', '_blank');
-});
+            // Init main modal
+            $('#searchModal').modal({
+                backdrop: 'static', 
+                keyboard: false
+            });
 
-$(document).ready(function() {
+            // Update modals to responsive
+            $('#searchModal').modal('handleUpdate');
+            $('#groupModal').modal('handleUpdate');
+            $('#userModal').modal('handleUpdate');
+            $('#itemModal').modal('handleUpdate');
+            $('#publishModal').modal('handleUpdate');
+            $('#mapModal').modal('handleUpdate');
 
-    // Init Bootstrap modal, with static status
-    $('#modal').modal({
-        backdrop: 'static', 
-        keyboard: false
-    });
+            // Init tooltip
+            $('body').tooltip({selector: '[data-toggle="tooltip"]'});
 
-    // Update to responsive
-    $('#modal').modal('handleUpdate');
-    $('#groupModal').modal('handleUpdate');
-    $('#userModal').modal('handleUpdate');
-    $('#itemModal').modal('handleUpdate');
-    $('#publishModal').modal('handleUpdate');
-    $('#previewModal').modal('handleUpdate');
+            console.log('[' + status.toUpperCase() + '] config.json loaded:', data);
 
-    // Init Bootstrap tooltip
-    $('body').tooltip({selector: '[data-toggle="tooltip"]'});
+        }).fail(function(e) {
+            
+            var error = {
+                name: e.status,
+                message: 'Erro ao ler arquivo de configuração'
+            };
+
+            logError(error);
+        });
+    }
 });
 
 function search(e) {
@@ -61,22 +94,27 @@ function search(e) {
         app.url = url.origin;
         app.portal = url.href;
 
-        if (app.type === 'groups') {
+        if (app.search.type === 'groups') {
 
-            if (app.filter === 'id') {
+            if (app.search.filter === 'id') {
                 searchGroupById(query);
             }
             else {
                 searchGroupByName(query);
             }
         }
-        else if (app.type === 'users') {
+        else if (app.search.type === 'users') {
             searchUser(query);
         }
-        else if (app.type === 'content') {
+        else if (app.search.type === 'content') {
             searchContent(query);
         }
     }
+}
+
+function resetSearch() {
+    document.getElementById('formSearch').reset();
+    $('#filters').hide();
 }
 
 function generateToken(username, password) {
@@ -109,7 +147,7 @@ function generateToken(username, password) {
 
 function setSearchType(type) {
 
-    app.type = type.value;
+    app.search.type = type.value;
 
     document.getElementById('groupID').removeAttribute('required');
 
@@ -135,9 +173,9 @@ function searchGroupById(id) {
         esriConfig.request.trustedServers.push(server);
         esriConfig.portalUrl = app.portal;
 
-        app.query = id;
+        app.search.query = id;
 
-        $('#modal').modal('hide');
+        $('#searchModal').modal('hide');
         $('#loader').show();
 
         var options = {
@@ -227,9 +265,9 @@ function searchGroupByName(name) {
         esriConfig.request.trustedServers.push(server);
         esriConfig.portalUrl = app.portal;
 
-        app.query = name;
+        app.search.query = name;
 
-        $('#modal').modal('hide');
+        $('#searchModal').modal('hide');
         $('#loader').show();
 
         var options = {
@@ -323,13 +361,13 @@ function searchUser(query) {
         esriConfig.request.trustedServers.push(server);
         esriConfig.portalUrl = app.portal;
 
-        app.query = query;
+        app.search.query = query;
 
         groupContent.innerHTML = '<i class="fas fa-search"></i> ' + query + ' (' + app.portal + ')';
         groupContent.href = app.portal;
         groupContent.target = '_blank';
 
-        $('#modal').modal('hide');
+        $('#searchModal').modal('hide');
         $('#loader').show();
 
         var options = {
@@ -520,7 +558,7 @@ function searchContent(query) {
         esriConfig.request.trustedServers.push(server);
         esriConfig.portalUrl = app.portal;
 
-        app.query = query;
+        app.search.query = query;
 
         groupContent.innerHTML = '<i class="fas fa-search"></i> ' + query + ' (' + app.portal + ')';
         groupContent.href = app.portal;
@@ -528,7 +566,7 @@ function searchContent(query) {
 
         userContent.innerHTML = 'Anônimo';
 
-        $('#modal').modal('hide');
+        $('#searchModal').modal('hide');
         $('#loader').show();
 
         var options = {
@@ -548,7 +586,7 @@ function searchContent(query) {
             var itens = response.data.results;
 
             total = response.data.total;
-            app.start = response.data.nextStart;
+            app.search.start = response.data.nextStart;
 
             if (itens.length) {
 
@@ -584,11 +622,11 @@ function paginateContent() {
         var options = {
             query: {
                 f: 'pjson',
-                q: app.query,
+                q: app.search.query,
                 sortField: 'modified',
                 sortOrder: 'desc',
                 num: 100,
-                start: app.start
+                start: app.search.start
             }
         };
 
@@ -596,7 +634,7 @@ function paginateContent() {
 
             var itens = response.data.results;
 
-            app.start = response.data.nextStart;
+            app.search.start = response.data.nextStart;
 
             if (itens.length) {
 
@@ -668,7 +706,7 @@ function createItens(itens) {
         }
     ];
 
-    app.csvData = [];
+    app.search.csvData = [];
 
     itens.forEach(function(item) {
 
@@ -686,7 +724,7 @@ function createItens(itens) {
             }
         }
         else {
-            thumbnail = '<img src="images/default_thumb.jpg" class="img-thumbnail img-item">';
+            thumbnail = '<img src="images/default.jpg" class="img-thumbnail img-item">';
         }
 
         rows.push(item.id);
@@ -706,10 +744,10 @@ function createItens(itens) {
         downloadedRows.push(item.owner);
         downloadedRows.push(item.url);
 
-        app.csvData.push(downloadedRows);
+        app.search.csvData.push(downloadedRows);
     });
 
-    app.table = createDataTable(columns, data);
+    app.search.table = createDataTable(columns, data);
         
     createContextMenu();
 }
@@ -770,7 +808,7 @@ function format(data) {
     });
 
     var table = 
-    '<table class="table table-hidden">'+
+    '<table class="table table-hidden" style="width: 100%;">'+
         '<tr>'+
             '<td style="width: 10%; vertical-align: middle;">Descrição:</td>'+
             '<td style="width: 90%;"><small class="text-muted">' + description + '</small></td>'+
@@ -821,6 +859,11 @@ function createContextMenu() {
                         name: 'ArcGIS Operations Dashboard',
                         icon: 'fas fa-tachometer-alt',
                         disabled: disabledDashboard 
+                    },
+                    'survey': {
+                        name: 'Survey123 Web',
+                        icon: 'far fa-file-alt',
+                        disabled: disabledSurvey
                     }
                 }
             },
@@ -861,16 +904,8 @@ function createContextMenu() {
                 },
                 disabled: disabledDownload
             }
-        },
-        events: {
-            preShow: function(options) {
-
-                console.log(options);
-            }
         }
     });
-
-    contextMenu
 
     return contextMenu;
 }
@@ -881,7 +916,7 @@ function downloadCSV() {
         ['ID', 'Nome', 'Tipo', 'Proprietário(a)', 'URL']
     ];
 
-    app.csvData.map(function(item) {
+    app.search.csvData.map(function(item) {
         data.push(item);
     });
 
@@ -889,7 +924,7 @@ function downloadCSV() {
     var link = document.createElement('a');
 
     link.setAttribute('href', csvContent);
-    link.setAttribute('download', app.query + '.csv');
+    link.setAttribute('download', app.search.query + '.csv');
 
     document.body.appendChild(link);
 
@@ -898,11 +933,7 @@ function downloadCSV() {
 
 function downloadGeojson(url, title) {
 
-    toastr.clear();
-    toastr.info('Processando download...', 'Aguarde', {
-        timeOut: 0, 
-        extendedTimeOut: 0
-    });
+    $('#loader').show();
 
     require(['esri/request'], function(esriRequest) {
 
@@ -919,7 +950,7 @@ function downloadGeojson(url, title) {
 
         esriRequest(url + '/0/query', options).then(function(response) {
 
-            toastr.clear();
+            $('#loader').hide();
 
             var name = title.replace(/ /g, '_');
             var data = JSON.stringify(response.data);
@@ -1025,12 +1056,12 @@ function extractData(layerUrl, format) {
 
 function contextMenuCallback(key) {
 
-    var target = this;
-    var rowData = app.table.row(target).data();
-    var id = rowData[0];
-    var url = rowData[1];
-    var title = rowData[3];
-    var type = rowData[4];
+    var target = this,
+        rowData = app.search.table.row(target).data(),
+        id = rowData[0],
+        url = rowData[1],
+        title = rowData[3],
+        type = rowData[4];
 
     switch (key) {
         case 'view':
@@ -1066,6 +1097,12 @@ function contextMenuCallback(key) {
 
             window.open(app.portal + '/apps/opsdashboard/index.html#/' + id, '_blank');
 
+            break;
+
+        case 'survey':
+
+            window.open('https://survey123.arcgis.com/share/' + id + '?portalUrl=' + app.portal, '_blank');
+    
             break;
 
         case 'url':
@@ -1193,7 +1230,7 @@ function publishItem(e) {
 function disabledView() {
 
     var target = this;
-    var rowData = app.table.row(target).data();
+    var rowData = app.search.table.row(target).data();
     var type = rowData[4];
 
     switch(type) {
@@ -1213,7 +1250,7 @@ function disabledView() {
 function disabledMapViewer() {
 
     var target = this;
-    var rowData = app.table.row(target).data();
+    var rowData = app.search.table.row(target).data();
     var type = rowData[4];
 
     switch(type) {
@@ -1235,7 +1272,7 @@ function disabledMapViewer() {
 function disabledSceneViewer() {
 
     var target = this;
-    var rowData = app.table.row(target).data();
+    var rowData = app.search.table.row(target).data();
     var type = rowData[4];
 
     switch(type) {
@@ -1251,7 +1288,7 @@ function disabledSceneViewer() {
 function disabledDashboard() {
 
     var target = this;
-    var rowData = app.table.row(target).data();
+    var rowData = app.search.table.row(target).data();
     var type = rowData[4];
 
     if (type !== 'Dashboard') {
@@ -1259,10 +1296,21 @@ function disabledDashboard() {
     }
 }
 
+function disabledSurvey() {
+
+    var target = this;
+    var rowData = app.search.table.row(target).data();
+    var type = rowData[4];
+
+    if (type !== 'Form') {
+        return true;
+    }
+}
+
 function disabledUrl() {
 
     var target = this;
-    var rowData = app.table.row(target).data();
+    var rowData = app.search.table.row(target).data();
     var url = rowData[1];
 
     if (url) {
@@ -1276,7 +1324,7 @@ function disabledUrl() {
 function disabledMetadata() {
 
     var target = this;
-    var rowData = app.table.row(target).data();
+    var rowData = app.search.table.row(target).data();
     var type = rowData[4];
 
     switch(type) {
@@ -1297,7 +1345,7 @@ function disabledMetadata() {
 function disabledPublish() {
 
     var target = this;
-    var rowData = app.table.row(target).data();
+    var rowData = app.search.table.row(target).data();
     var type = rowData[4];
 
     switch(type) {
@@ -1313,7 +1361,7 @@ function disabledPublish() {
 function disabledGeojson() {
 
     var target = this;
-    var rowData = app.table.row(target).data();
+    var rowData = app.search.table.row(target).data();
     var type = rowData[4];
 
     switch(type) {
@@ -1328,7 +1376,7 @@ function disabledGeojson() {
 function disabledKml() {
 
     var target = this;
-    var rowData = app.table.row(target).data();
+    var rowData = app.search.table.row(target).data();
     var type = rowData[4];
 
     switch(type) {
@@ -1342,7 +1390,7 @@ function disabledKml() {
 function disabledFile() {
 
     var target = this;
-    var rowData = app.table.row(target).data();
+    var rowData = app.search.table.row(target).data();
     var type = rowData[4];
 
     switch(type) {
@@ -1401,7 +1449,7 @@ function disabledFile() {
 function disabledDownload() {
 
     var target = this;
-    var rowData = app.table.row(target).data();
+    var rowData = app.search.table.row(target).data();
     var type = rowData[4];
 
     switch(type) {
@@ -1470,7 +1518,7 @@ function logInfo(msg, back) {
 
         setTimeout(function() { 
 
-            $('#modal').modal('show');
+            $('#searchModal').modal('show');
 
         }, 500);
     }
@@ -1489,7 +1537,7 @@ function logError(e, back) {
 
         setTimeout(function() { 
 
-            $('#modal').modal('show');
+            $('#searchModal').modal('show');
 
         }, 500);
     }

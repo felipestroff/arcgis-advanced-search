@@ -4,7 +4,6 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <title></title>
-        <!-- Styles -->
         <link rel="stylesheet" href="styles/bootstrap.css">
         <link rel="stylesheet" href="styles/fontawesome.css">
         <link rel="stylesheet" href="styles/datatables.css">
@@ -14,224 +13,17 @@
         <link rel="stylesheet" href="https://js.arcgis.com/4.12/esri/themes/light/main.css">
     </head>
     <body>
-
-        <!-- Loading -->
-        <div id="loader" class="padding-leader-3 padding-trailer-3">
-            <div class="loader-bars"></div>
-            <div class="loader-text"></div>
+        <div id="components" class="template container-fluid">
+            <loader></loader>
+            <navbar></navbar>
+            <search></search>
+            <group></group>
+            <user></user>
+            <item></item>
+            <preview></preview>
+            <paginate></paginate>
+            <datatable></datatable>
         </div>
-
-        <!-- Navbar -->
-        <nav id="navigation" class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-            <a id="group" class="navbar-brand" href="#"></a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#menu" aria-controls="menu" aria-expanded="false" aria-label="Menu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div id="menu" class="collapse navbar-collapse">
-                <ul class="navbar-nav mr-auto" style="display: none !important;">
-                    <li class="nav-item dropdown active">
-                        <a class="nav-link dropdown-toggle" href="#" id="dropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-user-circle"></i>
-                            <span id="user"></span>
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="dropdown">
-                            <a class="dropdown-item" href="">
-                                <i class="fas fa-power-off"></i> Sair
-                            </a>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" onclick="downloadCSV();" style="cursor: pointer;">
-                            <i class="fas fa-file-download"></i> Download
-                        </a>
-                    </li>
-                </ul>
-                <a id="version" class="navbar-text"></a>
-            </div>
-        </nav>
-
-        <main role="main" class="container-fluid">
-            <div class="template">
-                
-                <div id="paginateBtns" class="text-center" style="margin-bottom: 15px;">
-                    <button id="next" type="button" data-type="next" onclick="paginateContent();" class="btn btn-outline-success">
-                        <i class="fas fa-plus"></i> Registros
-                    </button>
-                    <hr>
-                </div>
-
-                <!-- Data Table -->
-                <table id="table" class="table table-bordered table-striped table-hover"></table>
-
-                <!-- Search Modal -->
-                <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-                    <div class="modal-dialog modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                            <form id="formSearch" onsubmit="search(event);">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">ArcGIS REST API</h5>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="form-group">
-                                        <fieldset>
-                                            <legend class="text-center">Local</legend>
-                                            <input id="urlInput" type="url" list="urlSelect" placeholder="Selecione ou digite uma URL válida" class="form-control form-control-lg" required>
-                                            <datalist id="urlSelect">
-                                                <option value="https://arcgis.com">https://arcgis.com</option>
-                                                <option value="https://codexremote.maps.arcgis.com">https://codexremote.maps.arcgis.com</option>
-                                                <option value="https://gisserver.codex.local/portal">https://gisserver.codex.local/portal</option>
-                                                <option value="https://iede.hml.rs.gov.br/portal">https://iede.hml.rs.gov.br/portal</option>
-                                                <option value="https://iede.rs.gov.br/portal">https://iede.rs.gov.br/portal</option>
-                                                <option value="https://zee.rs.gov.br/portal">https://zee.rs.gov.br/portal</option>
-                                                <option value="https://grd.defesacivil.rs.gov.br/portal">https://grd.defesacivil.rs.gov.br/portal</option>
-                                            </datalist>
-                                        </fieldset>
-                                    </div>
-                                    <div id="types" class="form-group">
-                                        <fieldset>
-                                            <legend class="text-center">Tipo</legend>
-                                            <div class="custom-control custom-radio custom-control-inline">
-                                                <input class="custom-control-input" type="radio" name="type" id="groups" value="groups" onclick="setSearchType(this);" required>
-                                                <label class="custom-control-label" for="groups">
-                                                    Grupo
-                                                </label>
-                                            </div>
-                                            <div class="custom-control custom-radio custom-control-inline">
-                                                <input class="custom-control-input" type="radio" name="type" id="users" value="users" onclick="setSearchType(this);" required>
-                                                <label class="custom-control-label" for="users">
-                                                    Usuário
-                                                </label>
-                                            </div>
-                                            <div class="custom-control custom-radio custom-control-inline">
-                                                <input class="custom-control-input" type="radio" name="type" id="content" value="content" onclick="setSearchType(this);">
-                                                <label class="custom-control-label" for="content">
-                                                    Conteúdo
-                                                </label>
-                                            </div>
-                                        </fieldset>
-                                    </div>
-                                    <div id="filters" class="form-group">
-                                        <fieldset>
-                                            <legend class="text-center">Filtros</legend>
-                                            <div class="custom-control custom-radio custom-control-inline">
-                                                <input class="custom-control-input" type="radio" name="group" id="groupID" value="id" onclick="app.filter = this.value;">
-                                                <label class="custom-control-label" for="groupID">
-                                                    ID
-                                                    <i class="fas fa-globe-americas" title="Público" data-toggle="tooltip"></i>
-                                                    <i class="fas fa-lock" title="Privado" data-toggle="tooltip"></i>
-                                                </label>
-                                            </div>
-                                            <div class="custom-control custom-radio custom-control-inline">
-                                                <input class="custom-control-input" type="radio" name="group" id="groupName" value="name" onclick="app.filter = this.value;">
-                                                <label class="custom-control-label" for="groupName">
-                                                    Nome
-                                                    <i class="fas fa-globe-americas" title="Público" data-toggle="tooltip"></i>
-                                                </label>
-                                            </div>
-                                            <div class="alert alert-info">
-                                                Busca por nome funcionará somente em conteúdos públicos
-                                            </div>
-                                        </fieldset>
-                                    </div>
-                                    <div class="form-group">
-                                        <input id="query" class="form-control form-control-lg" type="text" placeholder="Pesquisar por..." required>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('formSearch').reset();">Limpar</button>
-                                    <button type="submit" class="btn btn-primary">Continuar</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Group Select Modal -->
-                <div class="modal fade" id="groupModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-                    <div class="modal-dialog modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Selecionar Grupo</h5>
-                            </div>
-                            <div class="modal-body"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- User Select Modal -->
-                <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-                    <div class="modal-dialog modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Selecionar Usuário</h5>
-                            </div>
-                            <div class="modal-body"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Item Select Modal -->
-                <div class="modal fade" id="itemModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-                    <div class="modal-dialog modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Selecionar Itens</h5>
-                            </div>
-                            <div class="modal-body"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Map Preview Modal -->
-                <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-hidden="true">
-                    <div class="modal-dialog modal-xl" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title"></h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="viewDiv"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Publish Modal -->
-                <div class="modal fade" id="publishModal" tabindex="-1" role="dialog" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                            <form onsubmit="publishItem(event);">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Publicar Item (Camada hospedada)</h5>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="form-group">
-                                        <input id="itemTitle" class="form-control form-control-lg" type="text" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <input id="itemID" class="form-control form-control-lg" type="hidden" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <input id="fileType" class="form-control form-control-lg" type="hidden" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <input id="itemName" class="form-control form-control-lg" type="text" placeholder="Nome" required>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="submit" class="btn btn-success">Publicar</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Scripts -->
         <script src="lib/jquery.js"></script>
         <script src="lib/popper.js"></script>
         <script src="lib/bootstrap.js"></script>
@@ -239,6 +31,8 @@
         <script src="lib/contextMenu.js"></script>
         <script src="lib/jquery.ui.position.js"></script>
         <script src="lib/toastr.js"></script>
+        <script src="lib/vue.js"></script>
+        <script src="lib/vue-loader.js"></script>
         <script src="lib/api.js"></script>
         <script src="app.js"></script>
         <script src="map.js"></script>

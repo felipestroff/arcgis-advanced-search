@@ -13,17 +13,20 @@
                         <div class="form-group">
                             <fieldset>
                                 <legend class="text-center">Local</legend>
-                                <input id="urlInput" type="url" list="urlSelect" placeholder="Selecione ou digite uma URL válida" class="form-control form-control-lg" required>
+                                <input id="urlInput" type="url" list="urlSelect" placeholder="Selecione ou digite uma URL válida" class="form-control form-control-lg" aria-describedby="urlHelp" required>
                                 <datalist id="urlSelect">
                                     <option value="https://arcgis.com">https://arcgis.com</option>
                                     <option value="https://codexremote.maps.arcgis.com">https://codexremote.maps.arcgis.com</option>
                                     <option value="https://gisserver.codex.local/portal">https://gisserver.codex.local/portal</option>
-                                    <option value="https://iede.hml.rs.gov.br/portal">https://iede.hml.rs.gov.br/portal</option>
                                     <option value="https://iede.rs.gov.br/portal">https://iede.rs.gov.br/portal</option>
                                     <option value="https://zee.rs.gov.br/portal">https://zee.rs.gov.br/portal</option>
                                     <option value="https://grd.defesacivil.rs.gov.br/portal">https://grd.defesacivil.rs.gov.br/portal</option>
                                     <option value="https://gis.novohamburgo.rs.gov.br/portal">https://gis.novohamburgo.rs.gov.br/portal</option>
+                                    <option value="https://geo.canoas.rs.gov.br/portal">https://geo.canoas.rs.gov.br/portal</option>
                                 </datalist>
+                                <small id="urlHelp" class="form-text text-muted">
+                                    Portal for ArcGIS da Organização
+                                </small>
                             </fieldset>
                         </div>
                         <div id="types" class="form-group">
@@ -73,7 +76,10 @@
                             </fieldset>
                         </div>
                         <div class="form-group">
-                            <input id="query" class="form-control form-control-lg" type="text" placeholder="Pesquisar por..." required>
+                            <input id="query" class="form-control form-control-lg" type="text" placeholder="Pesquisar por..." aria-describedby="queryHelp" required>
+                            <small id="queryHelp" class="form-text text-muted">
+                                Palavras-chave, tags, categorias, item(ID), etc
+                            </small>
                         </div>
                     </div>
                     <div class="modal-footer">

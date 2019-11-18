@@ -835,7 +835,7 @@ function createContextMenu() {
             'view': {
                 name: 'Visualizar',
                 icon: 'fas fa-map-marker-alt',
-                disabled: disabledView
+                visible: visibleView
             },
             'open': {
                 name: 'Abrir no',
@@ -848,39 +848,44 @@ function createContextMenu() {
                     'mapViewer': {
                         name: 'ArcGIS Map Viewer',
                         icon: 'fas fa-map-marked-alt',
-                        disabled: disabledMapViewer
+                        visible: visibleMapViewer
                     },
                     'sceneViewer': {
                         name: 'ArcGIS Scene Viewer',
                         icon: 'fas fa-layer-group',
-                        disabled: disabledSceneViewer
+                        visible: visibleSceneViewer
                     },
                     'dashboard': {
                         name: 'ArcGIS Operations Dashboard',
                         icon: 'fas fa-tachometer-alt',
-                        disabled: disabledDashboard 
+                        visible: visibleDashboard 
                     },
                     'survey': {
                         name: 'Survey123 Web',
                         icon: 'far fa-file-alt',
-                        disabled: disabledSurvey
+                        visible: visibleSurvey
+                    },
+                    'workforce': {
+                        name: 'Workforce for ArcGIS',
+                        icon: 'fas fa-hard-hat',
+                        visible: visibleWorkforce
                     }
                 }
             },
             'url': {
                 name: 'URL',
                 icon: 'fas fa-link',
-                disabled: disabledUrl
+                visible: visibleUrl
             },
             'metadata': {
                 name: 'Metadados',
                 icon: 'far fa-file-alt',
-                disabled: disabledMetadata
+                visible: visibleMetadata
             },
             'publish': {
                 name: 'Publicar',
                 icon: 'fas fa-cloud-upload-alt',
-                disabled: disabledPublish
+                visible: visiblePublish
             },
             'download': {
                 name: 'Download',
@@ -889,20 +894,20 @@ function createContextMenu() {
                     'geojson': {
                         name: 'GeoJSON',
                         icon: 'fas fa-globe',
-                        disabled: disabledGeojson
+                        visible: visibleGeojson
                     },
                     'kml': {
                         name: 'KML',
                         icon: 'fas fa-globe',
-                        disabled: disabledKml
+                        visible: visibleKml
                     },
                     'file': {
                         name: 'Arquivo',
                         icon: 'far fa-save',
-                        disabled: disabledFile
+                        visible: visibleFile
                     }
                 },
-                disabled: disabledDownload
+                visible: visibleDownload
             }
         }
     });
@@ -1105,6 +1110,12 @@ function contextMenuCallback(key) {
     
             break;
 
+        case 'workforce':
+
+            window.open(app.portal + '/apps/workforce/#/projects/' + id, '_blank');
+
+            break;
+
         case 'url':
 
             window.open(url, '_blank');
@@ -1227,7 +1238,7 @@ function publishItem(e) {
     }
 }
 
-function disabledView() {
+function visibleView() {
 
     var target = this;
     var rowData = app.search.table.row(target).data();
@@ -1241,13 +1252,13 @@ function disabledView() {
         case 'Map Service':
         case 'Scene Service':
         case 'WMS':
-            return false;
-        default:
             return true;
+        default:
+            return false;
     }
 }
 
-function disabledMapViewer() {
+function visibleMapViewer() {
 
     var target = this;
     var rowData = app.search.table.row(target).data();
@@ -1263,13 +1274,13 @@ function disabledMapViewer() {
         case 'WFS':
         case 'WMS':
         case 'Web Map':   
-            return false;
-        default:
             return true;
+        default:
+            return false;
     }
 }
 
-function disabledSceneViewer() {
+function visibleSceneViewer() {
 
     var target = this;
     var rowData = app.search.table.row(target).data();
@@ -1279,49 +1290,69 @@ function disabledSceneViewer() {
         case 'Scene Service':
         case 'Vector Tile Service':
         case 'Web Scene':  
-            return false;
-        default:
             return true;
+        default:
+            return false;
     }
 }
 
-function disabledDashboard() {
+function visibleDashboard() {
 
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
 
-    if (type !== 'Dashboard') {
+    if (type === 'Dashboard') {
         return true;
+    }
+    else {
+        return false;
     }
 }
 
-function disabledSurvey() {
+function visibleSurvey() {
 
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
 
-    if (type !== 'Form') {
+    if (type === 'Form') {
         return true;
+    }
+    else {
+        return false;
     }
 }
 
-function disabledUrl() {
+function visibleWorkforce() {
+
+    var target = this;
+    var rowData = app.search.table.row(target).data();
+    var type = rowData[4];
+
+    if (type === 'Workforce Project') {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function visibleUrl() {
 
     var target = this;
     var rowData = app.search.table.row(target).data();
     var url = rowData[1];
 
     if (url) {
-        return false;
+        return true;
     }
     else {
-        return true;
+        return false;
     }
 }
 
-function disabledMetadata() {
+function visibleMetadata() {
 
     var target = this;
     var rowData = app.search.table.row(target).data();
@@ -1336,13 +1367,13 @@ function disabledMetadata() {
         case 'Scene Service':
         case 'WFS':
         case 'WMS':
-            return false;
-        default:
             return true;
+        default:
+            return false;
     }
 }
 
-function disabledPublish() {
+function visiblePublish() {
 
     var target = this;
     var rowData = app.search.table.row(target).data();
@@ -1352,13 +1383,13 @@ function disabledPublish() {
         case 'CSV':
         case 'GeoJson':
         case 'Shapefile':
-            return false;
-        default:
             return true;
+        default:
+            return false;
     }
 }
 
-function disabledGeojson() {
+function visibleGeojson() {
 
     var target = this;
     var rowData = app.search.table.row(target).data();
@@ -1367,13 +1398,13 @@ function disabledGeojson() {
     switch(type) {
         case 'Feature Service':
         case 'Map Service':
-            return false;
-        default:
             return true;
+        default:
+            return false;
     }
 }
 
-function disabledKml() {
+function visibleKml() {
 
     var target = this;
     var rowData = app.search.table.row(target).data();
@@ -1381,13 +1412,13 @@ function disabledKml() {
 
     switch(type) {
         case 'Map Service':
-            return false;
-        default:
             return true;
+        default:
+            return false;
     }
 }
 
-function disabledFile() {
+function visibleFile() {
 
     var target = this;
     var rowData = app.search.table.row(target).data();
@@ -1440,13 +1471,13 @@ function disabledFile() {
         case 'Vector Tile Package':
         case 'Web Mapping Application':
         case 'Windows Mobile Package':
-            return false;
-        default:
             return true;
+        default:
+            return false;
     }
 }
 
-function disabledDownload() {
+function visibleDownload() {
 
     var target = this;
     var rowData = app.search.table.row(target).data();
@@ -1501,9 +1532,9 @@ function disabledDownload() {
         case 'Vector Tile Package':
         case 'Web Mapping Application':
         case 'Windows Mobile Package':
-            return false;
-        default:
             return true;
+        default:
+            return false;
     }
 }
 

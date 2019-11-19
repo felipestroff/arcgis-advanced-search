@@ -44,6 +44,14 @@ var app = new Vue({
         $.getJSON('config.json', function(data, status) {
 
             $('title').html(data.name);
+
+            $('meta[name="description"]').attr('content', data.description);
+            $('meta[name="author"]').attr('content', data.author);
+
+            $('link[rel="canonical"]').attr('href', data.url);
+            $('link[rel="author"]').attr('href', data.publisher);
+            $('link[rel="publisher"]').attr('href', data.publisher);
+
             $('#group').html(data.name);
             $('#version').html('v' + data.version);
             $('#version').attr('href', 'https://gitlab.com/fstroff/arcgis-portal-search/tree/v' + data.version);

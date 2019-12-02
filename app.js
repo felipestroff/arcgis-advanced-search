@@ -57,6 +57,8 @@ var app = new Vue({
             $('#version').attr('href', 'https://gitlab.com/fstroff/arcgis-portal-search/tree/v' + data.version);
             $('#version').attr('target', '_blank');
 
+            console.log('[' + status.toUpperCase() + '] config.json loaded:', data);
+
             // Init main modal
             $('#searchModal').modal({
                 backdrop: 'static', 
@@ -73,8 +75,6 @@ var app = new Vue({
 
             // Init tooltip
             $('body').tooltip({selector: '[data-toggle="tooltip"]'});
-
-            console.log('[' + status.toUpperCase() + '] config.json loaded:', data);
 
         }).fail(function(e) {
             

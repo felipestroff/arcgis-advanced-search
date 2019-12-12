@@ -41,50 +41,53 @@ var app = new Vue({
     },
     created() {
         // Read config.json
-        $.getJSON('config.json', function(data, status) {
+        setTimeout(function() { 
 
-            $('title').html(data.name);
+            $.getJSON('config.json', function(data, status) {
 
-            $('meta[name="description"]').attr('content', data.description);
-            $('meta[name="author"]').attr('content', data.author);
+                console.log('[' + status.toUpperCase() + '] config.json loaded:', data);
 
-            $('link[rel="canonical"]').attr('href', data.url);
-            $('link[rel="author"]').attr('href', data.publisher);
-            $('link[rel="publisher"]').attr('href', data.publisher);
+                $('title').html(data.name);
 
-            $('#group').html(data.name);
-            $('#version').html('v' + data.version);
-            $('#version').attr('href', 'https://gitlab.com/fstroff/arcgis-portal-search/tree/v' + data.version);
-            $('#version').attr('target', '_blank');
+                $('meta[name="description"]').attr('content', data.description);
+                $('meta[name="author"]').attr('content', data.author);
 
-            console.log('[' + status.toUpperCase() + '] config.json loaded:', data);
+                $('link[rel="canonical"]').attr('href', data.url);
+                $('link[rel="author"]').attr('href', data.publisher);
+                $('link[rel="publisher"]').attr('href', data.publisher);
 
-            // Init main modal
-            $('#searchModal').modal({
-                backdrop: 'static', 
-                keyboard: false
+                $('#group').html(data.name);
+                $('#version').html('v' + data.version);
+                $('#version').attr('href', 'https://gitlab.com/fstroff/arcgis-portal-search/tree/v' + data.version);
+                $('#version').attr('target', '_blank');
+
+                // Init main modal
+                $('#searchModal').modal({
+                    backdrop: 'static', 
+                    keyboard: false
+                });
+
+                // Update modals to responsive
+                $('#searchModal').modal('handleUpdate');
+                $('#groupModal').modal('handleUpdate');
+                $('#userModal').modal('handleUpdate');
+                $('#itemModal').modal('handleUpdate');
+                $('#publishModal').modal('handleUpdate');
+                $('#mapModal').modal('handleUpdate');
+
+                // Init tooltip
+                $('body').tooltip({selector: '[data-toggle="tooltip"]'});
+
+            }).fail(function(e) {
+                
+                var error = {
+                    name: e.status,
+                    message: 'Erro ao ler arquivo de configuração'
+                };
+
+                logError(error);
             });
-
-            // Update modals to responsive
-            $('#searchModal').modal('handleUpdate');
-            $('#groupModal').modal('handleUpdate');
-            $('#userModal').modal('handleUpdate');
-            $('#itemModal').modal('handleUpdate');
-            $('#publishModal').modal('handleUpdate');
-            $('#mapModal').modal('handleUpdate');
-
-            // Init tooltip
-            $('body').tooltip({selector: '[data-toggle="tooltip"]'});
-
-        }).fail(function(e) {
-            
-            var error = {
-                name: e.status,
-                message: 'Erro ao ler arquivo de configuração'
-            };
-
-            logError(error);
-        });
+        }, 500);
     }
 });
 

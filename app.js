@@ -41,7 +41,7 @@ var app = new Vue({
     },
     created() {
         // Read config.json
-        setTimeout(function() { 
+        setTimeout(function() {
 
             $.getJSON('config.json', function(data, status) {
 
@@ -370,6 +370,7 @@ function searchUser(query) {
         });
 
         var server = app.url.replace(/^https?\:\/\//i, '');
+        var navContent = document.getElementById('navigation');
         var groupContent = document.getElementById('group');
         var userContent = document.getElementById('user');
 
@@ -446,19 +447,13 @@ function searchUser(query) {
                     portal.queryUsers(queryParameters).then(function(queryResults) {
                         var userThumb = queryResults.results[0].thumbnailUrl;
 
-                        if (userThumb) {
-                            var navContent = document.getElementById('navigation');
-
-                            navContent.style.backgroundImage = 'url(' + userThumb + ')';
-                            groupContent.style.paddingLeft = '50px';
-                        }
-                        else {
+                        if (!userThumb) {
                             userThumb = './images/no-user-thumb.jpg';
                         }
 
                         $('#userModal .modal-body').append(
                             '<div class="custom-control custom-radio custom-control-inline">' +
-                                '<img src="' + userThumb + '" class="thumb">' +
+                                '<img id="userThumb_' + i + '" src="' + userThumb + '" class="thumb">' +
                                 '<input class="custom-control-input" type="radio" name="userSelect" id="userSelect_' + i + '" value="' + user.id + '">' +                    
                                 '<label class="custom-control-label" for="userSelect_' + i + '">' + user.fullName + ' (<a href="' + app.portal + '/home/user.html?user=' + user.username + '" target="_blank">' + user.username + '</a>)</label>' + 
                             '</div>'
@@ -470,12 +465,16 @@ function searchUser(query) {
                             $('#loader').show();
     
                             esriRequest(app.portal + '/sharing/rest/content/users/' + user.username, options).then(function (response) {
-    
+
                                 $('#loader').hide();
                                 $('.navbar-nav').show();
     
                                 var itens = response.data.items;
                                 var folders = response.data.folders;
+                                var thumb = document.getElementById('userThumb_' + i).src;
+
+                                navContent.style.backgroundImage = 'url(' + thumb + ')';
+                                groupContent.style.paddingLeft = '50px';
     
                                 if (itens.length + folders.length) {
                                 
@@ -554,14 +553,16 @@ function searchUser(query) {
                                     logInfo('Nenhum resultado obtido');
     
                                     setTimeout(function() { 
-    
+                                        // Back to users modal
                                         $('#userModal').modal('show');
-                            
                                     }, 500);
                                 }
     
                             }).catch((e) => {
                                 logError(e);
+
+                                // Back to users modal
+                                $('#userModal').modal('show');
                             });
                         });
                     });

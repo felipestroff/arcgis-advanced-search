@@ -446,7 +446,13 @@ function searchUser(query) {
                     portal.queryUsers(queryParameters).then(function(queryResults) {
                         var userThumb = queryResults.results[0].thumbnailUrl;
 
-                        if (!userThumb) {
+                        if (userThumb) {
+                            var navContent = document.getElementById('navigation');
+
+                            navContent.style.backgroundImage = 'url(' + userThumb + ')';
+                            groupContent.style.paddingLeft = '50px';
+                        }
+                        else {
                             userThumb = './images/no-user-thumb.jpg';
                         }
 

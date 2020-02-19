@@ -3,7 +3,7 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Selecionar Itens</h5>
+                    <h5 class="modal-title">Selecionar</h5>
                 </div>
                 <div class="modal-body"></div>
             </div>

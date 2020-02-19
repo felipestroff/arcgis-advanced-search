@@ -10,3 +10,18 @@
         </div>
     </div>
 </template>
+
+<style scoped>
+    .custom-control {
+        padding-left: 0;
+    }
+
+    .custom-control-label {
+        margin-top: 14px;
+    }
+
+    .thumb {
+        width: 50px;
+        margin-right: 30px;
+    }
+</style>

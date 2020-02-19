@@ -17,12 +17,12 @@
                                 <datalist id="urlSelect">
                                     <option value="https://arcgis.com">https://arcgis.com</option>
                                     <option value="https://codexremote.maps.arcgis.com">https://codexremote.maps.arcgis.com</option>
-                                    <option value="https://gisserver.codex.local/portal">https://gisserver.codex.local/portal</option>
                                     <option value="https://iede.rs.gov.br/portal">https://iede.rs.gov.br/portal</option>
                                     <option value="https://zee.rs.gov.br/portal">https://zee.rs.gov.br/portal</option>
                                     <option value="https://grd.defesacivil.rs.gov.br/portal">https://grd.defesacivil.rs.gov.br/portal</option>
                                     <option value="https://gis.novohamburgo.rs.gov.br/portal">https://gis.novohamburgo.rs.gov.br/portal</option>
                                     <option value="https://geo.canoas.rs.gov.br/portal">https://geo.canoas.rs.gov.br/portal</option>
+                                    <option value="https://geo.blumenau.sc.gov.br/portal">https://geo.blumenau.sc.gov.br/portal</option>
                                 </datalist>
                                 <small id="urlHelp" class="form-text text-muted">
                                     Portal for ArcGIS da Organização

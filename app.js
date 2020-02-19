@@ -363,7 +363,11 @@ function searchGroupByName(name) {
 
 function searchUser(query) {
 
-    require(['esri/request', 'esri/config'], function (esriRequest, esriConfig) {
+    require(['esri/request', 'esri/config', 'esri/portal/Portal'], function (esriRequest, esriConfig, Portal) {
+
+        var portal = new Portal({
+            url: app.portal,
+        });
 
         var server = app.url.replace(/^https?\:\/\//i, '');
         var groupContent = document.getElementById('group');
@@ -435,111 +439,124 @@ function searchUser(query) {
 
                 users.forEach(function(user, i) {
 
-                    $('#userModal .modal-body').append(
-                        '<div class="custom-control custom-radio custom-control-inline">' +
-                            '<input class="custom-control-input" type="radio" name="userSelect" id="userSelect_' + i + '" value="' + user.id + '">' +
-                            '<label class="custom-control-label" for="userSelect_' + i + '">' + user.fullName + ' (<a href="' + app.portal + '/home/user.html?user=' + user.username + '" target="_blank">' + user.username + '</a>)</label>' + 
-                        '</div>'
-                    );
+                    var queryParameters = {
+                        query: "username:" + user.username
+                    };
 
-                    $('#userSelect_' + i).click(function() {
+                    portal.queryUsers(queryParameters).then(function(queryResults) {
+                        var userThumb = queryResults.results[0].thumbnailUrl;
 
-                        $('#userModal').modal('hide');
-                        $('#loader').show();
+                        if (!userThumb) {
+                            userThumb = './images/no-user-thumb.jpg';
+                        }
 
-                        esriRequest(app.portal + '/sharing/rest/content/users/' + user.username, options).then(function (response) {
-                            
-                            $('#loader').hide();
-                            $('.navbar-nav').show();
+                        $('#userModal .modal-body').append(
+                            '<div class="custom-control custom-radio custom-control-inline">' +
+                                '<img src="' + userThumb + '" class="thumb">' +
+                                '<input class="custom-control-input" type="radio" name="userSelect" id="userSelect_' + i + '" value="' + user.id + '">' +                    
+                                '<label class="custom-control-label" for="userSelect_' + i + '">' + user.fullName + ' (<a href="' + app.portal + '/home/user.html?user=' + user.username + '" target="_blank">' + user.username + '</a>)</label>' + 
+                            '</div>'
+                        );
 
-                            var itens = response.data.items;
-                            var folders = response.data.folders;
+                        $('#userSelect_' + i).click(function() {
 
-                            if (itens.length + folders.length) {
-                            
-                                if (itens.length) {
-
-                                    $('#itemModal .modal-body').append(
-                                        '<div class="custom-control custom-radio custom-control-inline">' +
-                                            '<input class="custom-control-input" type="radio" name="itemSelect" id="itemSelect">' +
-                                            '<label class="custom-control-label" for="itemSelect">Itens</label>' + 
-                                        '</div>'
-                                    );
-
-                                    $('#itemSelect').click(function() {
-
-                                        createItens(itens);
-        
-                                        $('#itemModal').modal('hide');
-                        
-                                        toastr.clear();
-                                        toastr.success('', itens.length + ' itens encontrados');
-                                    });
-                                }
+                            $('#userModal').modal('hide');
+                            $('#loader').show();
+    
+                            esriRequest(app.portal + '/sharing/rest/content/users/' + user.username, options).then(function (response) {
+    
+                                $('#loader').hide();
+                                $('.navbar-nav').show();
+    
+                                var itens = response.data.items;
+                                var folders = response.data.folders;
+    
+                                if (itens.length + folders.length) {
                                 
-                                if (folders.length) {
-
-                                    $('#itemModal .modal-body').append(
-                                        '<fieldset>' +
-                                            '<legend class="text-center">Pastas</legend>' +
-                                        '</fieldset>'
-                                    );
-
-                                    folders.forEach(function(folder, i) {
-
-                                        $('#itemModal .modal-body fieldset').append(
+                                    if (itens.length) {
+    
+                                        $('#itemModal .modal-body').append(
                                             '<div class="custom-control custom-radio custom-control-inline">' +
-                                                '<input class="custom-control-input" type="radio" name="folderSelect" id="folderSelect_' + i + '" value="' + folder.id + '">' +
-                                                '<label class="custom-control-label" for="folderSelect_' + i + '">' + folder.title + '</label>' + 
+                                                '<input class="custom-control-input" type="radio" name="itemSelect" id="itemSelect">' +
+                                                '<label class="custom-control-label" for="itemSelect">itens</label>' + 
                                             '</div>'
                                         );
-
-                                        $('#folderSelect_' + i).click(function() {
-
+    
+                                        $('#itemSelect').click(function() {
+    
+                                            createItens(itens);
+            
                                             $('#itemModal').modal('hide');
-                                            $('#loader').show();
-
-                                            esriRequest(app.portal + '/sharing/rest/content/users/' + user.username + '/' + folder.id, options).then(function (response) {
-
-                                                itens = response.data.items;
-
-                                                if (itens.length) {
-
-                                                    createItens(itens);
-        
-                                                    $('#loader').hide();
+                            
+                                            toastr.clear();
+                                            toastr.success('', itens.length + ' itens encontrados');
+                                        });
+                                    }
                                     
-                                                    toastr.clear();
-                                                    toastr.success('', itens.length + ' itens encontrados');
-                                                }
-                                                else {
-                                                    logInfo('Nenhum resultado obtido');
-                                                }
-                                            }).catch((e) => {
-                                                logError(e);
+                                    if (folders.length) {
+    
+                                        $('#itemModal .modal-body').append(
+                                            '<fieldset>' +
+                                                '<legend class="text-center">Pastas</legend>' +
+                                            '</fieldset>'
+                                        );
+    
+                                        folders.forEach(function(folder, i) {
+    
+                                            $('#itemModal .modal-body fieldset').append(
+                                                '<div class="custom-control custom-radio custom-control-inline">' +
+                                                    '<input class="custom-control-input" type="radio" name="folderSelect" id="folderSelect_' + i + '" value="' + folder.id + '">' +
+                                                    '<label class="custom-control-label" for="folderSelect_' + i + '">' + folder.title + '</label>' + 
+                                                '</div>'
+                                            );
+    
+                                            $('#folderSelect_' + i).click(function() {
+    
+                                                $('#itemModal').modal('hide');
+                                                $('#loader').show();
+    
+                                                esriRequest(app.portal + '/sharing/rest/content/users/' + user.username + '/' + folder.id, options).then(function (response) {
+    
+                                                    itens = response.data.items;
+    
+                                                    if (itens.length) {
+    
+                                                        createItens(itens);
+            
+                                                        $('#loader').hide();
+                                        
+                                                        toastr.clear();
+                                                        toastr.success('', itens.length + ' itens encontrados');
+                                                    }
+                                                    else {
+                                                        logInfo('Nenhum resultado obtido');
+                                                    }
+                                                }).catch((e) => {
+                                                    logError(e);
+                                                });
                                             });
                                         });
+                                    }
+                                    
+                                    $('#itemModal').modal({
+                                        backdrop: 'static', 
+                                        keyboard: false
                                     });
                                 }
-                                
-                                $('#itemModal').modal({
-                                    backdrop: 'static', 
-                                    keyboard: false
-                                });
-                            }
-                            else {
-
-                                logInfo('Nenhum resultado obtido');
-
-                                setTimeout(function() { 
-
-                                    $('#userModal').modal('show');
-                        
-                                }, 500);
-                            }
-
-                        }).catch((e) => {
-                            logError(e);
+                                else {
+    
+                                    logInfo('Nenhum resultado obtido');
+    
+                                    setTimeout(function() { 
+    
+                                        $('#userModal').modal('show');
+                            
+                                    }, 500);
+                                }
+    
+                            }).catch((e) => {
+                                logError(e);
+                            });
                         });
                     });
                 });

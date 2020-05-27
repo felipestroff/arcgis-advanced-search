@@ -31,3 +31,10 @@ Realize pesquisas em toda plataforma ArcGIS Online e ArcGIS Portal de qualquer o
 --------------------------------
 
 - Servidor de Aplicação (Apache ou IIS)
+
+**Contato**
+-----------
+BUGS, sugestões e contato em geral
+- felipe@codexremote.com.br
+ou
+- stroff.felipe@gmail.com

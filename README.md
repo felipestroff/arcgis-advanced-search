@@ -1,22 +1,22 @@
 # ArcGIS Advanced Search
 
-Aplicação sendo desenvolvida com base em estudos das APIs Javascript e REST do ArcGIS.
+Application being developed based on studies of ArcGIS Javascript and REST APIs.
 
-Pesquise itens de qualquer ambiente ArcGIS Online ou ArcGIS Portal.
+Search for items from any ArcGIS Online or ArcGIS Portal environment.
 
-**1. Funcionalidades**
+**1. Functionalities**
 ----------------------
 
-Realize pesquisas em toda plataforma ArcGIS Online e ArcGIS Portal de qualquer organização, incluindo grupos, usuários e itens
+Conduct surveys across any ArcGIS Online and ArcGIS Portal platform for any organization, including groups, users and items.
 
-- Visualize serviços de camadas e seus metadados
-- Faça o download de diversos tipos de serviço ou arquivo
-- Publique camadas hospedadas
-- Abra aplicativos e serviços diretamente pela aplicação
-- Grupos ou itens privados? Sem problema, faça o login para visualizar tudo
+- View layer services and their metadata
+- Download different types of services or files
+- Publish hosted layers
+- Open applications and services directly from the application
+- Groups or private items? No problem, login to view all
 
-**2. Tecnologias**
-------------------
+**2. Technology**
+-----------------
 
 - ArcGIS REST API
 - ArcGIS API for JavaScript
@@ -27,11 +27,11 @@ Realize pesquisas em toda plataforma ArcGIS Online e ArcGIS Portal de qualquer o
 - HTML
 - CSS
 
-**3. Requisitos e Dependências**
---------------------------------
+**3. Requirements and Dependencies**
+------------------------------------
 
-- Servidor de Aplicação (Apache ou IIS)
+- Application Server (Apache or IIS)
 
-**Contato**
+**Contact**
 -----------
-Dúvidas mande um email para: stroff.felipe@gmail.com ou entre em contato pelo WhatsApp: <a href="https://api.whatsapp.com/send?phone=5551980392299&text=Olá%20Felipe,%20Estou%20com%20dúvidas%20sobre%20o%20sistema%20Controle%20de%20Estoque." target="_blank">Clique Aqui para mandar uma mensagem pelo WhatsApp</a>
+Questions send an email to: stroff.felipe@gmail.com or contact WhatsApp: <a href="https://api.whatsapp.com/send?phone=5551980392299&text=Olá%20Felipe,%20Estou%20com%20dúvidas%20sobre%20a%20aplicação%20ArcGIS%20Advanced%20Search." target="_blank">Click Here to send a message via WhatsApp</a>

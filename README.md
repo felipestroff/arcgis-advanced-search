@@ -34,4 +34,4 @@ Conduct surveys across any ArcGIS Online and ArcGIS Portal platform for any orga
 
 **Contact**
 -----------
-Questions send an email to: stroff.felipe@gmail.com or contact WhatsApp: <a href="https://api.whatsapp.com/send?phone=5551980392299&text=Olá%20Felipe,%20Estou%20com%20dúvidas%20sobre%20o%20sistema%20Controle%20de%20Estoque." target="_blank">Click Here to send a message via WhatsApp</a>
+Questions send an email to: stroff.felipe@gmail.com or contact WhatsApp: <a href="https://api.whatsapp.com/send?phone=5551980392299&text=Olá%20Felipe,%20Estou%20com%20dúvidas%20sobre%20o%20aplicação%20ArcGIS%20Advanced%20Search." target="_blank">Click Here to send a message via WhatsApp</a>

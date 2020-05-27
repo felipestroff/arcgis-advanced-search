@@ -1,4 +1,10 @@
-# ArcGIS Online & Portal Search v0.7
+# ArcGIS Online & Portal Search
+
+https://codexremote.com.br/arcgis/search
+
+Aplicação sendo desenvolvida com base em estudos das APIs Javascript e REST do ArcGIS.
+
+Pesquise itens de qualquer ambiente ArcGIS Online ou ArcGIS Portal.
 
 **1. Funcionalidades**
 ----------------------
@@ -23,7 +29,7 @@ Realize pesquisas em toda plataforma ArcGIS Online e ArcGIS Portal de qualquer o
 - HTML
 - CSS
 
-**3. Requisitos e dependências**
+**3. Requisitos e Dependências**
 --------------------------------
 
-- Servidor de Aplicação (WampServer, XAMPP, IIS)
+- Servidor de Aplicação (Apache ou IIS)

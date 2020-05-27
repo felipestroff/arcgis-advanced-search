@@ -1,4 +1,4 @@
-# ArcGIS Online & Portal Search
+# ArcGIS Advanced Search
 
 Aplicação sendo desenvolvida com base em estudos das APIs Javascript e REST do ArcGIS.
 

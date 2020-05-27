@@ -34,7 +34,4 @@ Realize pesquisas em toda plataforma ArcGIS Online e ArcGIS Portal de qualquer o
 
 **Contato**
 -----------
-BUGS, sugestões e contato em geral
-- felipe@codexremote.com.br
-ou
-- stroff.felipe@gmail.com
+Dúvidas mande um email para: stroff.felipe@gmail.com ou entre em contato pelo WhatsApp: <a href="https://api.whatsapp.com/send?phone=5551980392299&text=Olá%20Felipe,%20Estou%20com%20dúvidas%20sobre%20o%20sistema%20Controle%20de%20Estoque." target="_blank">Clique Aqui para mandar uma mensagem pelo WhatsApp</a>

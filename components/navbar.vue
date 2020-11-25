@@ -18,12 +18,12 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" onclick="downloadCSV();" title="Lista de itens em CSV" style="cursor: pointer;">
+                    <!--<a class="nav-link" onclick="downloadCSV();" title="Lista de itens em CSV" style="cursor: pointer;">
                         <i class="fas fa-file-download"></i> Download
-                    </a>
+                    </a>-->
                 </li>
             </ul>
-            <a id="version" class="navbar-text"></a>
+            <!--<a id="version" class="navbar-text"></a>-->
         </div>
     </nav>
 </template>

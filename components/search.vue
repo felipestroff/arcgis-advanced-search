@@ -18,7 +18,7 @@
                                     <option value="https://arcgis.com">https://arcgis.com</option>
                                 </datalist>
                                 <small id="urlHelp" class="form-text text-muted">
-                                    Portal for ArcGIS da Organização
+                                    ArcGIS Enterprise ou ArcGIS Online
                                 </small>
                             </fieldset>
                         </div>
@@ -71,7 +71,7 @@
                         <div class="form-group">
                             <input id="query" class="form-control form-control-lg" type="text" placeholder="Pesquisar por..." aria-describedby="queryHelp" required>
                             <small id="queryHelp" class="form-text text-muted">
-                                Palavras-chave, tags, categorias, item(ID), etc
+                                Palavras-chave, tags, categorias, ID do item, etc
                             </small>
                         </div>
                     </div>

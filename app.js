@@ -57,9 +57,9 @@ var app = new Vue({
                 $('link[rel="publisher"]').attr('href', data.publisher);
 
                 $('#group').html(data.name);
-                $('#version').html('v' + data.version);
-                $('#version').attr('href', 'https://gitlab.com/fstroff/arcgis-portal-search/tree/v' + data.version);
-                $('#version').attr('target', '_blank');
+                //$('#version').html('v' + data.version);
+                //$('#version').attr('href', 'https://gitlab.com/fstroff/arcgis-portal-search/tree/v' + data.version);
+                //$('#version').attr('target', '_blank');
 
                 // Init main modal
                 $('#searchModal').modal({
@@ -483,7 +483,7 @@ function searchUser(query) {
                                         $('#itemModal .modal-body').append(
                                             '<div class="custom-control custom-radio custom-control-inline">' +
                                                 '<input class="custom-control-input" type="radio" name="itemSelect" id="itemSelect">' +
-                                                '<label class="custom-control-label" for="itemSelect">itens</label>' + 
+                                                '<label class="custom-control-label" for="itemSelect">Todos os itens</label>' + 
                                             '</div>'
                                         );
     
@@ -502,7 +502,7 @@ function searchUser(query) {
     
                                         $('#itemModal .modal-body').append(
                                             '<fieldset>' +
-                                                '<legend class="text-center">Pastas</legend>' +
+                                                '<legend>Pastas</legend>' +
                                             '</fieldset>'
                                         );
     
@@ -950,7 +950,7 @@ function createContextMenu() {
     return contextMenu;
 }
 
-function downloadCSV() {
+/*function downloadCSV() {
 
     var data = [
         ['ID', 'Nome', 'Tipo', 'Proprietário(a)', 'URL']
@@ -969,7 +969,7 @@ function downloadCSV() {
     document.body.appendChild(link);
 
     link.click();
-}
+}*/
 
 function downloadGeojson(url, title) {
 
@@ -1182,18 +1182,12 @@ function contextMenuCallback(key) {
 
         case 'kml':
 
-            window.open(url + '/0/query?where=1=1&outFields=*&f=kmz', '_self');
+            window.open(url + `/0/query?where=1=1&outFields=*&f=kmz&token=${app.token}`, '_self');
 
             break;
 
         case 'file':
-
-            if (type === 'Image') {
-                window.open(app.portal + '/sharing/rest/content/items/' + id + '/data', '_blank');
-            }
-            else {
-                window.open(app.portal + '/sharing/rest/content/items/' + id + '/data', '_self');
-            }
+            window.open(app.portal + `/sharing/rest/content/items/${id}/data?token=${app.token}`, '_blank');
 
             break;
     }

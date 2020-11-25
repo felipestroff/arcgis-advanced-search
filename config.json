@@ -1,8 +1,8 @@
 {
-    "name": "Codex Remote - ArcGIS Portal Search",
+    "name": "ArcGIS Portal Search",
     "description": "ArcGIS Portal Search",
-    "author": "Codex Remote",
-    "url": "https://codexremote.com.br/arcgis/search",
-    "publisher": "https://codexremote.com.br/home",
+    "author": "Felipe Stroff",
+    "url": "",
+    "publisher": "https://linkedin.com/in/felipestroff",
     "version": 0.8
 }

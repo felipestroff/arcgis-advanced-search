@@ -37,7 +37,7 @@ require(['esri/Map','esri/views/MapView', 'esri/widgets/Home'], function(Map, Ma
 
 function preview(id) {
 
-    require(['esri/portal/Portal', 'esri/layers/Layer'], function(Portal, Layer) {
+    require(['esri/portal/Portal', 'esri/layers/Layer', 'esri/core/watchUtils'], function(Portal, Layer, watchUtils) {
 
         $('#loader').show();
 
@@ -65,25 +65,30 @@ function preview(id) {
                 }
             })
             .then(function(layer) {
+                $('#mapModal .modal-title').html(layer.title);
+                $('#mapModal').modal();
 
                 app.api.map.add(layer);
 
                 layer.when(function() {
+                    watchUtils.whenTrueOnce(layer, 'loaded', function() {
+                        console.log('carregou');
 
-                    createLayerLegend(layer);
+                        createLayerLegend(layer);
 
-                    if (layer.source) {
-                        createLayerPopup(layer);
-                    }
+                        if (layer.source) {
+                            createLayerPopup(layer);
+                        }
 
-                    // TODO
-                    app.api.view.goTo(layer.fullExtent);
+                        try {
+                            app.api.view.goTo(layer.fullExtent);
+                        }
+                        catch (e) {
+                            console.error(e);
+                        }     
 
-                    $('#loader').hide();
-
-                    $('#mapModal .modal-title').html(layer.title);
-                    $('#mapModal').modal();
-
+                        $('#loader').hide();
+                    });
                 }).catch(function(e) {
                     logError(e);
                 });

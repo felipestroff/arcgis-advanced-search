@@ -1,5 +1,12 @@
-require(['esri/Map','esri/views/MapView', 'esri/widgets/Home'], function(Map, MapView, Home) {
-
+require([
+    'esri/Map',
+    'esri/views/MapView',
+    'esri/widgets/Home'
+], function(
+    Map,
+    MapView,
+    Home
+){
     app.api.map = new Map({
         basemap: 'streets'
     });
@@ -17,7 +24,6 @@ require(['esri/Map','esri/views/MapView', 'esri/widgets/Home'], function(Map, Ma
     app.api.view.ui.add(homeBtn, 'top-left');
 
     app.api.view.on('layerview-create', function (event) {
-
         var layer = event.layer;
 
         console.info('[LAYER]: ' + layer.title + ' (' + layer.type + ') loaded');
@@ -28,7 +34,6 @@ require(['esri/Map','esri/views/MapView', 'esri/widgets/Home'], function(Map, Ma
     });
 
     app.api.view.on('layerview-destroy', function (event) {
-
         var layer = event.layer;
 
         console.info('[LAYER]: ' + layer.title + ' (' + layer.type + ') removed');
@@ -36,9 +41,15 @@ require(['esri/Map','esri/views/MapView', 'esri/widgets/Home'], function(Map, Ma
 });
 
 function preview(id) {
-
-    require(['esri/portal/Portal', 'esri/layers/Layer', 'esri/core/watchUtils'], function(Portal, Layer, watchUtils) {
-
+    require([
+        'esri/portal/Portal',
+        'esri/layers/Layer',
+        'esri/core/watchUtils'
+    ], function(
+        Portal,
+        Layer,
+        watchUtils
+    ){
         $('#loader').show();
 
         var portal = new Portal({
@@ -46,7 +57,6 @@ function preview(id) {
         });
     
         portal.load().then(function() {
-
             console.info('[PORTAL]: ' + portal.url + ' loaded');
 
             app.api.map.removeAll();
@@ -65,15 +75,13 @@ function preview(id) {
                 }
             })
             .then(function(layer) {
-                $('#mapModal .modal-title').html(layer.title);
-                $('#mapModal').modal();
-
                 app.api.map.add(layer);
 
                 layer.when(function() {
-                    watchUtils.whenTrueOnce(layer, 'loaded', function() {
-                        console.log('carregou');
+                    $('#mapModal .modal-title').html(layer.title);
+                    $('#mapModal').modal();
 
+                    watchUtils.whenTrueOnce(layer, 'loaded', function() {
                         createLayerLegend(layer);
 
                         if (layer.source) {
@@ -84,8 +92,8 @@ function preview(id) {
                             app.api.view.goTo(layer.fullExtent);
                         }
                         catch (e) {
-                            console.error(e);
-                        }     
+                            logError(e);
+                        } 
 
                         $('#loader').hide();
                     });
@@ -102,9 +110,7 @@ function preview(id) {
 }
 
 function loadPortalBasemaps(portal) {
-    
     require(['esri/widgets/BasemapGallery', 'esri/widgets/Expand'], function(BasemapGallery, Expand) {
-
         app.api.view.ui.remove(app.api.basemapExpand);
 
         app.api.basemap = portal.useVectorBasemaps ? portal.defaultVectorBasemap : portal.defaultBasemap;
@@ -125,9 +131,7 @@ function loadPortalBasemaps(portal) {
 }
 
 function createLayerLegend(layer) {
-
     require(['esri/widgets/Legend'], function(Legend) {
-
         app.api.view.ui.remove(app.api.legend);
 
         app.api.legend = new Legend({
@@ -144,12 +148,10 @@ function createLayerLegend(layer) {
 }
 
 function createLayerPopup(layer) {
-
     var fields = layer.source.layerDefinition.fields;
     var layerFields = [];
 
     fields.forEach(function(field) {
-
         layerFields.push({
             fieldName: field.name,
             label: field.alias,

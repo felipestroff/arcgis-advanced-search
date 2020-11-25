@@ -11,6 +11,9 @@
                 <div class="modal-body">
                     <div id="viewDiv"></div>
                 </div>
+                <div class="modal-footer">
+                    Clique na feição para visualizar seus atributos
+                </div>
             </div>
         </div>
     </div>
@@ -20,7 +23,6 @@
     #viewDiv {
         padding: 0;
         margin: 0;
-        height: 650px;
-        width: 100%;
+        height: 80vh;
     }
 </style>

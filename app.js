@@ -22,29 +22,27 @@ var app = new Vue({
         }
     },
     beforeCreate() {
-            // Load components
-            new Vue({
-                el: '#components',
-                components: {
-                    'navbar': httpVueLoader('components/navbar.vue'),
-                    'loader': httpVueLoader('components/loader.vue'),
-                    'search': httpVueLoader('components/search.vue'),
-                    'group': httpVueLoader('components/group.vue'),
-                    'user': httpVueLoader('components/user.vue'),
-                    'item': httpVueLoader('components/item.vue'),
-                    'preview': httpVueLoader('components/preview.vue'),
-                    'publish': httpVueLoader('components/publish.vue'),
-                    'paginate': httpVueLoader('components/paginate.vue'),
-                    'datatable': httpVueLoader('components/datatable.vue')
-                }
-            });
+        // Load components
+        new Vue({
+            el: '#components',
+            components: {
+                'navbar': httpVueLoader('components/navbar.vue'),
+                'loader': httpVueLoader('components/loader.vue'),
+                'search': httpVueLoader('components/search.vue'),
+                'group': httpVueLoader('components/group.vue'),
+                'user': httpVueLoader('components/user.vue'),
+                'item': httpVueLoader('components/item.vue'),
+                'preview': httpVueLoader('components/preview.vue'),
+                'publish': httpVueLoader('components/publish.vue'),
+                'paginate': httpVueLoader('components/paginate.vue'),
+                'datatable': httpVueLoader('components/datatable.vue')
+            }
+        });
     },
     created() {
         // Read config.json
         setTimeout(function() {
-
             $.getJSON('config.json', function(data, status) {
-
                 console.log('[' + status.toUpperCase() + '] config.json loaded:', data);
 
                 $('title').html(data.name);
@@ -57,9 +55,7 @@ var app = new Vue({
                 $('link[rel="publisher"]').attr('href', data.publisher);
 
                 $('#group').html(data.name);
-                //$('#version').html('v' + data.version);
-                //$('#version').attr('href', 'https://gitlab.com/fstroff/arcgis-portal-search/tree/v' + data.version);
-                //$('#version').attr('target', '_blank');
+                $('#version').html('v' + data.version);
 
                 // Init main modal
                 $('#searchModal').modal({
@@ -92,14 +88,12 @@ var app = new Vue({
 });
 
 function search(e) {
-
     e.preventDefault();
 
     var urlInput = document.getElementById('urlInput').value;
     var query = document.getElementById('query').value;
 
     if (urlInput !== '') {
-
         var url = new URL(urlInput);
 
         app.url = url.origin;
@@ -635,7 +629,7 @@ function searchContent(query) {
                     $('#paginateBtns').show();
                 }
 
-                toastr.success('', itens.length + ' itens encontrados de ' + total);
+                toastr.success('', itens.length + ' itens encontrados');
             }
             else {
                 logInfo('Nenhum resultado obtido', true);
@@ -1194,7 +1188,6 @@ function contextMenuCallback(key) {
 }
 
 function publishItem(e) {
-
     e.preventDefault();
 
     var itemID = document.getElementById('itemID').value;
@@ -1202,7 +1195,6 @@ function publishItem(e) {
     var itemName = document.getElementById('itemName').value;
 
     if (itemName !== '') {
-
         $('#publishModal').modal('hide');
 
         toastr.clear();
@@ -1212,7 +1204,6 @@ function publishItem(e) {
         });
 
         require(['esri/request'], function(esriRequest) {
-
             var data = new FormData();
             var publishParameters = {
                 name: itemName,
@@ -1231,14 +1222,12 @@ function publishItem(e) {
             esriRequest(app.portal + '/sharing/rest/content/users/publish', options).then(function() {
                 // TODO
             }).catch(() => {
-                
                 var username = document.getElementById('dijit_form_ValidationTextBox_0').value;
                 var userContent = document.getElementById('user');
 
                 userContent.innerHTML = username;
 
                 esriRequest(app.portal + '/sharing/rest/content/users/' + username + '/publish', options).then(function(response) {
-
                     toastr.clear();
 
                     var error = response.data.services[0].error;
@@ -1247,7 +1236,6 @@ function publishItem(e) {
                         logError(error);
                     }
                     else {
-
                         var id = response.data.services[0].serviceItemId;
                         
                         toastr.success('Clique para acessar', 'Item publicado!', {
@@ -1258,7 +1246,6 @@ function publishItem(e) {
                             }
                         });
                     }
-
                 }).catch((e) => {
                     logError(e);
                 });
@@ -1268,7 +1255,6 @@ function publishItem(e) {
 }
 
 function visibleView() {
-
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
@@ -1288,7 +1274,6 @@ function visibleView() {
 }
 
 function visibleMapViewer() {
-
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
@@ -1310,7 +1295,6 @@ function visibleMapViewer() {
 }
 
 function visibleSceneViewer() {
-
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
@@ -1326,7 +1310,6 @@ function visibleSceneViewer() {
 }
 
 function visibleDashboard() {
-
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
@@ -1340,7 +1323,6 @@ function visibleDashboard() {
 }
 
 function visibleSurvey() {
-
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
@@ -1354,7 +1336,6 @@ function visibleSurvey() {
 }
 
 function visibleWorkforce() {
-
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
@@ -1368,7 +1349,6 @@ function visibleWorkforce() {
 }
 
 function visibleUrl() {
-
     var target = this;
     var rowData = app.search.table.row(target).data();
     var url = rowData[1];
@@ -1382,7 +1362,6 @@ function visibleUrl() {
 }
 
 function visibleMetadata() {
-
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
@@ -1403,7 +1382,6 @@ function visibleMetadata() {
 }
 
 function visiblePublish() {
-
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
@@ -1419,7 +1397,6 @@ function visiblePublish() {
 }
 
 function visibleGeojson() {
-
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
@@ -1434,7 +1411,6 @@ function visibleGeojson() {
 }
 
 function visibleKml() {
-
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
@@ -1448,7 +1424,6 @@ function visibleKml() {
 }
 
 function visibleFile() {
-
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
@@ -1507,7 +1482,6 @@ function visibleFile() {
 }
 
 function visibleDownload() {
-
     var target = this;
     var rowData = app.search.table.row(target).data();
     var type = rowData[4];
@@ -1568,24 +1542,19 @@ function visibleDownload() {
 }
 
 function logInfo(msg, back) {
-
     $('#loader').hide();
 
     toastr.clear();
     toastr.info('', msg);
 
     if (back) {
-
         setTimeout(function() { 
-
             $('#searchModal').modal('show');
-
         }, 500);
     }
 }
 
 function logError(e, back) {
-
     console.error(e);
 
     $('#loader').hide();
@@ -1594,11 +1563,8 @@ function logError(e, back) {
     toastr.error(e.message, e.name);
 
     if (back) {
-
         setTimeout(function() { 
-
             $('#searchModal').modal('show');
-
         }, 500);
     }
 }

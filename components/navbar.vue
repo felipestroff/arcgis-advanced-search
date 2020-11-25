@@ -23,7 +23,7 @@
                     </a>-->
                 </li>
             </ul>
-            <!--<a id="version" class="navbar-text"></a>-->
+            <span id="version" class="navbar-text"></span>
         </div>
     </nav>
 </template>
